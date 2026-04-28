@@ -525,11 +525,21 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               label="Sinal ato"
               value={formatBRL(c.sa)}
               note={`até ${input.saParcelas}x cartão`}
+              note2={
+                input.saParcelas > 0 && c.sa > 0
+                  ? `≈ ${formatBRL(c.sa / input.saParcelas)} / mês`
+                  : undefined
+              }
             />
             <PreviewRow
               label="Pró-soluto"
               value={formatBRL(c.ps)}
               note={`até ${input.psParcelas}x boleto c/ correção`}
+              note2={
+                input.psParcelas > 0 && c.ps > 0
+                  ? `≈ ${formatBRL(c.ps / input.psParcelas)} / mês`
+                  : undefined
+              }
             />
           </PreviewPhase>
           <PreviewPhase num="2" title="Seguro de Obra">
@@ -587,10 +597,12 @@ function PreviewRow({
   label,
   value,
   note,
+  note2,
 }: {
   label: string;
   value: string;
   note?: string;
+  note2?: string;
 }) {
   return (
     <div className="flex items-start justify-between gap-3 py-1 border-b border-dashed border-white/5 last:border-b-0">
@@ -598,6 +610,7 @@ function PreviewRow({
       <div className="text-right">
         <div className="text-lg font-bold leading-tight">{value}</div>
         {note && <div className="text-[9px] gold opacity-90">{note}</div>}
+        {note2 && <div className="text-[9px] opacity-60">{note2}</div>}
       </div>
     </div>
   );
