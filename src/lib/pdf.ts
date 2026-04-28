@@ -194,11 +194,19 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
 
   // Fase 1 — Entrada
   phaseTitle("1", "Entrada");
-  subRow("Sinal ato", formatBRL(c.sa), `até ${input.saParcelas}x no cartão`);
+  const saParcela = input.saParcelas > 0 ? c.sa / input.saParcelas : 0;
+  const psParcela = input.psParcelas > 0 ? c.ps / input.psParcelas : 0;
+  subRow(
+    "Sinal ato",
+    formatBRL(c.sa),
+    `até ${input.saParcelas}x no cartão`,
+    saParcela > 0 ? `≈ ${formatBRL(saParcela)} / mês` : undefined,
+  );
   subRow(
     "Pró-soluto",
     formatBRL(c.ps),
     `até ${input.psParcelas}x boleto c/ correção`,
+    psParcela > 0 ? `≈ ${formatBRL(psParcela)} / mês` : undefined,
   );
   y += 1;
 
