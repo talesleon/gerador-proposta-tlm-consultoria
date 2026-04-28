@@ -207,20 +207,20 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     "Sinal ato",
     formatBRL(c.sa),
     `até ${input.saParcelas}x no cartão`,
-    saParcela > 0 ? `≈ ${formatBRL(saParcela)} / mês` : undefined,
+    saParcela > 0 ? `~ ${formatBRL(saParcela)} / mês` : undefined,
   );
   subRow(
     "Pró-soluto",
     formatBRL(c.ps),
     `até ${input.psParcelas}x boleto c/ correção`,
-    psParcela > 0 ? `≈ ${formatBRL(psParcela)} / mês` : undefined,
+    psParcela > 0 ? `~ ${formatBRL(psParcela)} / mês` : undefined,
   );
   y += 1;
 
   // Fase 2 — Seguro
   phaseTitle("2", "Seguro de Obra");
   subRow("Inicial", formatBRLCompact(input.seguroInicial));
-  subRow("Final (≈)", formatBRLCompact(input.seguroFinal));
+  subRow("Final (~)", formatBRLCompact(input.seguroFinal));
   y += 1;
 
   // Fase 3 — Pós-obra
