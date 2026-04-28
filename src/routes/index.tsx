@@ -246,7 +246,14 @@ function Index() {
                   />
                 </Field>
 
-                <Field label="Parcelas do Sinal (cartão)">
+                <Field
+                  label="Parcelas do Sinal (cartão)"
+                  helper={
+                    input.saParcelas > 0 && c.sa > 0
+                      ? `≈ ${formatBRL(c.sa / input.saParcelas)} / mês`
+                      : undefined
+                  }
+                >
                   <Input
                     inputMode="numeric"
                     value={String(input.saParcelas)}
@@ -263,7 +270,13 @@ function Index() {
 
               <Field
                 label={`Parcelas do Pró-soluto (boleto) · máx ${psMax}x`}
-                helper={psOver ? `Excede o limite da ${input.builder}` : undefined}
+                helper={
+                  psOver
+                    ? `Excede o limite da ${input.builder}`
+                    : input.psParcelas > 0 && c.ps > 0
+                      ? `≈ ${formatBRL(c.ps / input.psParcelas)} / mês`
+                      : undefined
+                }
                 warn={psOver}
               >
                 <Input

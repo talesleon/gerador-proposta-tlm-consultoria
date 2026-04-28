@@ -91,46 +91,67 @@ export function parseBRLInput(s: string): number {
  */
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
   const L: string[] = [];
-  const sep = "━━━━━━━━━━━━━━━━━━━";
+  const sep = "━━━━━━━━━━━━";
 
   // Cabeçalho
-  L.push(`🏢 *${input.empreendimento || "Empreendimento"}*`);
-  if (input.unidade) L.push(`📍 ${input.unidade}`);
-  if (input.tipologia) L.push(`🛏️ ${input.tipologia}`);
-  if (input.entrega) L.push(`🔑 Entrega: *${input.entrega}*`);
+  L.push(`*${input.empreendimento || "Empreendimento"}*`);
   L.push("");
+  if (input.unidade) {
+    L.push(input.unidade);
+    L.push("");
+  }
+  if (input.tipologia) {
+    L.push(input.tipologia);
+    L.push("");
+  }
+  if (input.entrega) {
+    L.push(`Entrega: *${input.entrega}*`);
+    L.push("");
+  }
   L.push(sep);
+  L.push("");
 
   // Valores
-  L.push(`💰 *VALORES*`);
-  L.push(`Preço tabela: ~${formatBRL(input.vt)}~`);
+  L.push(`*VALORES*`);
+  L.push("");
+  L.push(`Preço tabela: ${formatBRL(input.vt)}`);
+  L.push("");
   L.push(`Nossa negociação: *${formatBRL(input.vv)}*`);
   const desconto = input.vt - input.vv;
   if (desconto > 0) {
-    L.push(`_Economia: ${formatBRL(desconto)}_`);
+    L.push("");
+    L.push(`Economia: ${formatBRL(desconto)}`);
   }
   L.push("");
   L.push(sep);
+  L.push("");
 
   // Pagamento
-  L.push(`📋 *ESTRUTURA DE PAGAMENTO*`);
+  L.push(`*ESTRUTURA DE PAGAMENTO*`);
   L.push("");
-  L.push(`*1️⃣  ENTRADA*`);
-  L.push(`   • Sinal ato: *${formatBRL(c.sa)}*`);
-  L.push(`     _até ${input.saParcelas}x no cartão_`);
-  L.push(`   • Pró-soluto: *${formatBRL(c.ps)}*`);
-  L.push(`     _até ${input.psParcelas}x no boleto c/ correção_`);
+  L.push(`*1.  ENTRADA*`);
   L.push("");
-  L.push(`*2️⃣  SEGURO DE OBRA*`);
-  L.push(`   • Inicial: *${formatBRLCompact(input.seguroInicial)}*`);
-  L.push(`   • Final: *±${formatBRLCompact(input.seguroFinal)}*`);
+  L.push(`   • Sinal ato: ${formatBRL(c.sa)}`);
+  L.push(`     até ${input.saParcelas}x no cartão`);
   L.push("");
-  L.push(`*3️⃣  PÓS-OBRA*`);
+  L.push(`   • Pró-soluto: ${formatBRL(c.ps)}`);
+  L.push(`     até ${input.psParcelas}x no boleto c/ correção`);
+  L.push("");
+  L.push(`*2.  SEGURO DE OBRA*`);
+  L.push("");
+  L.push(`   • Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
+  L.push(`   • Final: ±${formatBRLCompact(input.seguroFinal)}`);
+  L.push("");
+  L.push(`*3.  PÓS-OBRA*`);
+  L.push("");
   L.push(`   • Financiamento direto com o banco`);
   L.push(`   • A partir de *${input.posObraInicio || "(definir)"}*`);
   L.push("");
   L.push(sep);
-  L.push(`_TLM Negócios Imobiliários · ${input.builder}_`);
+  L.push("");
+  L.push(
+    `TLM Negócios Imobiliários ·  Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias. ${todayBR()}`,
+  );
 
   return L.join("\n");
 }
