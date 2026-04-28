@@ -10,26 +10,26 @@ export const MAX_PS_PARCELAS: Record<Builder, number> = {
 export interface ProposalInput {
   builder: Builder;
   empreendimento: string;
-  unidade: string; // ex: "BL01 - 1904"
-  tipologia: string; // ex: "2 quartos com suíte e varanda"
-  entrega: string; // ex: "Fev/2029"
-  vt: number; // Valor Tabela
-  vv: number; // Valor Venda
-  va: number; // Valor Avaliação
-  saOverride: number | null; // Sinal Ato editado pelo usuário (se null, usa 2% V.V)
-  saParcelas: number; // 1..12
-  psParcelas: number; // 1..MAX
+  unidade: string;
+  tipologia: string;
+  entrega: string;
+  vt: number;
+  vv: number;
+  va: number;
+  saOverride: number | null;
+  saParcelas: number;
+  psParcelas: number;
   seguroInicial: number;
   seguroFinal: number;
-  posObraInicio: string; // ex: "março de 2029"
+  posObraInicio: string;
 }
 
 export interface ProposalComputed {
-  vf: number; // 80% V.A
-  ve: number; // V.V - V.F
-  saDefault: number; // 2% V.V
-  sa: number; // SA efetivo (override ou default)
-  ps: number; // V.E - S.A
+  vf: number;
+  ve: number;
+  saDefault: number;
+  sa: number;
+  ps: number;
   saValid: boolean;
   psValid: boolean;
   psMax: number;
@@ -79,37 +79,60 @@ export function formatBRLCompact(n: number): string {
 
 export function parseBRLInput(s: string): number {
   if (!s) return 0;
-  // remove tudo que não é dígito, vírgula ou ponto
   const cleaned = s.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : 0;
 }
 
-/** Texto otimizado para WhatsApp (usa *negrito* e indentação). */
+/**
+ * Texto otimizado para WhatsApp.
+ * Usa *negrito*, emojis sutis, blocos separados por linha em branco
+ * e indentação leve para facilitar leitura.
+ */
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
-  const lines: string[] = [];
-  lines.push(`*${input.empreendimento || "Empreendimento"}*`);
-  if (input.unidade || input.tipologia) {
-    lines.push(`${input.unidade}${input.unidade && input.tipologia ? ": " : ""}${input.tipologia}`);
+  const L: string[] = [];
+  const sep = "━━━━━━━━━━━━━━━━━━━";
+
+  // Cabeçalho
+  L.push(`🏢 *${input.empreendimento || "Empreendimento"}*`);
+  if (input.unidade) L.push(`📍 ${input.unidade}`);
+  if (input.tipologia) L.push(`🛏️ ${input.tipologia}`);
+  if (input.entrega) L.push(`🔑 Entrega: *${input.entrega}*`);
+  L.push("");
+  L.push(sep);
+
+  // Valores
+  L.push(`💰 *VALORES*`);
+  L.push(`Preço tabela: ~${formatBRL(input.vt)}~`);
+  L.push(`Nossa negociação: *${formatBRL(input.vv)}*`);
+  const desconto = input.vt - input.vv;
+  if (desconto > 0) {
+    L.push(`_Economia: ${formatBRL(desconto)}_`);
   }
-  if (input.entrega) lines.push(`Entrega: ${input.entrega}`);
-  lines.push("--------------------------------");
-  lines.push(`Preço Tabela: ${formatBRL(input.vt)}`);
-  lines.push(`Nossa negociação: *${formatBRL(input.vv)}*`);
-  lines.push(`Estrutura de Pagamento:`);
-  lines.push(`1. ENTRADA:`);
-  lines.push(`    Sinal ato: ${formatBRL(c.sa)} (até ${input.saParcelas}x cartão)`);
-  lines.push(
-    `    Pró-soluto: ${formatBRL(c.ps)} (até ${input.psParcelas}x no boleto com correção)`,
-  );
-  lines.push(`2. Seguro de Obra:`);
-  lines.push(`    Inicial: ${formatBRLCompact(input.seguroInicial)}`);
-  lines.push(`    Final: +-${formatBRLCompact(input.seguroFinal)}`);
-  lines.push(`3. Pós-obra:`);
-  lines.push(
-    `    Direto com o banco, somente em ${input.posObraInicio || "(definir mês/ano)"}`,
-  );
-  return lines.join("\n");
+  L.push("");
+  L.push(sep);
+
+  // Pagamento
+  L.push(`📋 *ESTRUTURA DE PAGAMENTO*`);
+  L.push("");
+  L.push(`*1️⃣  ENTRADA*`);
+  L.push(`   • Sinal ato: *${formatBRL(c.sa)}*`);
+  L.push(`     _até ${input.saParcelas}x no cartão_`);
+  L.push(`   • Pró-soluto: *${formatBRL(c.ps)}*`);
+  L.push(`     _até ${input.psParcelas}x no boleto c/ correção_`);
+  L.push("");
+  L.push(`*2️⃣  SEGURO DE OBRA*`);
+  L.push(`   • Inicial: *${formatBRLCompact(input.seguroInicial)}*`);
+  L.push(`   • Final: *±${formatBRLCompact(input.seguroFinal)}*`);
+  L.push("");
+  L.push(`*3️⃣  PÓS-OBRA*`);
+  L.push(`   • Financiamento direto com o banco`);
+  L.push(`   • A partir de *${input.posObraInicio || "(definir)"}*`);
+  L.push("");
+  L.push(sep);
+  L.push(`_TLM Negócios Imobiliários · ${input.builder}_`);
+
+  return L.join("\n");
 }
 
 export function todayBR(): string {
