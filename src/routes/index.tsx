@@ -248,13 +248,13 @@ function Index() {
 
                 <Field label="Parcelas do Sinal (cartão)">
                   <Input
-                    type="number"
-                    min={1}
-                    max={12}
-                    value={input.saParcelas}
-                    onChange={(e) =>
-                      set("saParcelas", Math.max(1, Math.min(12, Number(e.target.value) || 1)))
-                    }
+                    inputMode="numeric"
+                    value={String(input.saParcelas)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 1 : Math.max(1, Math.min(12, Number(digits)));
+                      set("saParcelas", n);
+                    }}
                   />
                 </Field>
               </div>
