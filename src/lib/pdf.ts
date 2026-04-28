@@ -169,7 +169,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     y += 5.5;
   };
 
-  const subRow = (label: string, value: string, note?: string) => {
+  const subRow = (label: string, value: string, note?: string, note2?: string) => {
     // Label + valor na mesma linha
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
@@ -189,16 +189,31 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
       txt(note, W - M, y, { align: "right" });
       y += 3;
     }
+    if (note2) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.8);
+      setColor(MUTED);
+      txt(note2, W - M, y, { align: "right" });
+      y += 2.8;
+    }
     y += 2.2;
   };
 
   // Fase 1 — Entrada
   phaseTitle("1", "Entrada");
-  subRow("Sinal ato", formatBRL(c.sa), `até ${input.saParcelas}x no cartão`);
+  const saParcela = input.saParcelas > 0 ? c.sa / input.saParcelas : 0;
+  const psParcela = input.psParcelas > 0 ? c.ps / input.psParcelas : 0;
+  subRow(
+    "Sinal ato",
+    formatBRL(c.sa),
+    `até ${input.saParcelas}x no cartão`,
+    saParcela > 0 ? `≈ ${formatBRL(saParcela)} / mês` : undefined,
+  );
   subRow(
     "Pró-soluto",
     formatBRL(c.ps),
     `até ${input.psParcelas}x boleto c/ correção`,
+    psParcela > 0 ? `≈ ${formatBRL(psParcela)} / mês` : undefined,
   );
   y += 1;
 
