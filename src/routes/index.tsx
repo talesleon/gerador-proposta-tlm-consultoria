@@ -267,13 +267,13 @@ function Index() {
                 warn={psOver}
               >
                 <Input
-                  type="number"
-                  min={1}
-                  max={psMax}
-                  value={input.psParcelas}
-                  onChange={(e) =>
-                    set("psParcelas", Math.max(1, Number(e.target.value) || 1))
-                  }
+                  inputMode="numeric"
+                  value={String(input.psParcelas)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    const n = digits === "" ? 1 : Math.max(1, Number(digits));
+                    set("psParcelas", n);
+                  }}
                 />
               </Field>
             </div>
