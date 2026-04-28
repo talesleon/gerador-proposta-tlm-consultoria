@@ -109,7 +109,7 @@ function Index() {
             <Building2 className="h-5 w-5" style={{ color: "var(--gold)" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="font-display text-lg font-bold leading-tight text-foreground truncate">
+            <h1 className="text-lg font-bold leading-tight text-foreground truncate">
               Gerador de Proposta
             </h1>
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -452,7 +452,7 @@ function Computed({
       }`}
     >
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="font-display text-xl font-bold text-foreground">{value}</div>
+      <div className="text-xl font-bold text-foreground">{value}</div>
     </div>
   );
 }
@@ -469,7 +469,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
           <div className="text-[9px] tracking-[3px] uppercase gold-strong">
             TLM · Proposta
           </div>
-          <h3 className="font-display text-3xl font-bold leading-tight mt-1">
+          <h3 className="text-3xl font-bold leading-tight mt-1">
             {input.empreendimento || "Empreendimento"}
           </h3>
           {input.unidade && (
@@ -491,7 +491,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               <div className="text-[9px] tracking-widest uppercase opacity-50">
                 Preço Tabela
               </div>
-              <div className="font-display text-base line-through opacity-60">
+              <div className="text-base line-through opacity-60">
                 {formatBRL(input.vt)}
               </div>
             </div>
@@ -499,7 +499,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               <div className="text-[9px] tracking-widest uppercase gold-strong">
                 Negociação
               </div>
-              <div className="font-display text-2xl font-bold">
+              <div className="text-2xl font-bold">
                 {formatBRL(input.vv)}
               </div>
             </div>
@@ -583,7 +583,7 @@ function PreviewRow({
     <div className="flex items-start justify-between gap-3 py-1 border-b border-dashed border-white/5 last:border-b-0">
       <div className="text-[12px] opacity-80">{label}</div>
       <div className="text-right">
-        <div className="font-display text-lg font-bold leading-tight">{value}</div>
+        <div className="text-lg font-bold leading-tight">{value}</div>
         {note && <div className="text-[9px] gold opacity-90">{note}</div>}
       </div>
     </div>
