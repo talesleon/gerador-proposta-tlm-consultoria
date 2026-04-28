@@ -169,7 +169,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     y += 5.5;
   };
 
-  const subRow = (label: string, value: string, note?: string) => {
+  const subRow = (label: string, value: string, note?: string, note2?: string) => {
     // Label + valor na mesma linha
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
@@ -188,6 +188,13 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
       setColor(GOLD_SOFT);
       txt(note, W - M, y, { align: "right" });
       y += 3;
+    }
+    if (note2) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.8);
+      setColor(MUTED);
+      txt(note2, W - M, y, { align: "right" });
+      y += 2.8;
     }
     y += 2.2;
   };
