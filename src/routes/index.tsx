@@ -38,19 +38,19 @@ export const Route = createFileRoute("/")({
 
 const DEFAULT: ProposalInput = {
   builder: "Direcional",
-  empreendimento: "Priori Residence",
-  unidade: "BL01 - 1904",
-  tipologia: "2 quartos com suíte e varanda",
-  entrega: "Fev/2029",
-  vt: 558147.19,
-  vv: 503000,
-  va: 457500,
+  empreendimento: "",
+  unidade: "",
+  tipologia: "",
+  entrega: "",
+  vt: 0,
+  vv: 0,
+  va: 0,
   saOverride: null,
   saParcelas: 12,
   psParcelas: 84,
   seguroInicial: 0,
-  seguroFinal: 1600,
-  posObraInicio: "março de 2029",
+  seguroFinal: 0,
+  posObraInicio: "",
 };
 
 function Index() {
