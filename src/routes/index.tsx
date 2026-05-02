@@ -38,6 +38,8 @@ export const Route = createFileRoute("/")({
 
 const DEFAULT: ProposalInput = {
   builder: "Direcional",
+  clienteNome: "",
+  clienteTelefone: "",
   empreendimento: "",
   unidade: "",
   tipologia: "",
