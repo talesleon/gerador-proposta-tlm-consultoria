@@ -130,6 +130,36 @@ function Index() {
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
         {/* ─────────── FORMULÁRIO ─────────── */}
         <section className="space-y-5">
+          {/* Cliente */}
+          <Card className="elev-1 p-5">
+            <SectionHead icon={<User className="h-4 w-4" />} title="Cliente" />
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <Field label="Nome do cliente">
+                <Input
+                  value={input.clienteNome}
+                  onChange={(e) => set("clienteNome", e.target.value)}
+                  placeholder="Ex.: João da Silva"
+                />
+              </Field>
+              <Field
+                label="Telefone (WhatsApp)"
+                helper={
+                  input.clienteTelefone && !normalizeWhatsAppPhone(input.clienteTelefone)
+                    ? "Telefone inválido — informe DDD + número"
+                    : "Ex.: (61) 99999-9999"
+                }
+                warn={!!input.clienteTelefone && !normalizeWhatsAppPhone(input.clienteTelefone)}
+              >
+                <Input
+                  inputMode="tel"
+                  value={input.clienteTelefone}
+                  onChange={(e) => set("clienteTelefone", e.target.value)}
+                  placeholder="(61) 99999-9999"
+                />
+              </Field>
+            </div>
+          </Card>
+
           {/* Empreendimento */}
           <Card className="elev-1 p-5">
             <SectionHead icon={<Building2 className="h-4 w-4" />} title="Empreendimento" />
