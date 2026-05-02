@@ -87,6 +87,16 @@ export function parseBRLInput(s: string): number {
 }
 
 /**
+ * Extrai apenas dígitos de um telefone e garante prefixo 55 (Brasil).
+ * Retorna string vazia se não houver dígitos suficientes.
+ */
+export function normalizeWhatsAppPhone(raw: string): string {
+  const digits = (raw || "").replace(/\D/g, "");
+  if (digits.length < 10) return "";
+  return digits.startsWith("55") ? digits : `55${digits}`;
+}
+
+/**
  * Texto otimizado para WhatsApp.
  * Usa *negrito*, emojis sutis, blocos separados por linha em branco
  * e indentação leve para facilitar leitura.
