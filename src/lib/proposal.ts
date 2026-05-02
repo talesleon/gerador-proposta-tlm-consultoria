@@ -9,6 +9,8 @@ export const MAX_PS_PARCELAS: Record<Builder, number> = {
 
 export interface ProposalInput {
   builder: Builder;
+  clienteNome: string;
+  clienteTelefone: string;
   empreendimento: string;
   unidade: string;
   tipologia: string;
