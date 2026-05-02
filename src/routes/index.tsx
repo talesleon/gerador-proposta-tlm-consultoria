@@ -82,7 +82,9 @@ function Index() {
   }
 
   function handleShareWhatsApp() {
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    const phone = normalizeWhatsAppPhone(input.clienteTelefone);
+    const base = phone ? `https://wa.me/${phone}` : "https://wa.me/";
+    const url = `${base}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
