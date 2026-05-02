@@ -14,13 +14,14 @@ import {
   formatBRL,
   formatBRLCompact,
   MAX_PS_PARCELAS,
+  normalizeWhatsAppPhone,
   parseBRLInput,
   todayBR,
   type Builder,
   type ProposalInput,
 } from "@/lib/proposal";
 import { generateProposalPDF } from "@/lib/pdf";
-import { Copy, Download, RotateCcw, Building2, Calculator, FileText, Share2 } from "lucide-react";
+import { Copy, Download, RotateCcw, Building2, Calculator, FileText, Share2, User } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
