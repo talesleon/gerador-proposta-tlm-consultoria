@@ -14,13 +14,14 @@ import {
   formatBRL,
   formatBRLCompact,
   MAX_PS_PARCELAS,
+  normalizeWhatsAppPhone,
   parseBRLInput,
   todayBR,
   type Builder,
   type ProposalInput,
 } from "@/lib/proposal";
 import { generateProposalPDF } from "@/lib/pdf";
-import { Copy, Download, RotateCcw, Building2, Calculator, FileText, Share2 } from "lucide-react";
+import { Copy, Download, RotateCcw, Building2, Calculator, FileText, Share2, User } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -38,6 +39,8 @@ export const Route = createFileRoute("/")({
 
 const DEFAULT: ProposalInput = {
   builder: "Direcional",
+  clienteNome: "",
+  clienteTelefone: "",
   empreendimento: "",
   unidade: "",
   tipologia: "",
@@ -79,7 +82,9 @@ function Index() {
   }
 
   function handleShareWhatsApp() {
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    const phone = normalizeWhatsAppPhone(input.clienteTelefone);
+    const base = phone ? `https://wa.me/${phone}` : "https://wa.me/";
+    const url = `${base}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
@@ -125,6 +130,36 @@ function Index() {
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
         {/* ─────────── FORMULÁRIO ─────────── */}
         <section className="space-y-5">
+          {/* Cliente */}
+          <Card className="elev-1 p-5">
+            <SectionHead icon={<User className="h-4 w-4" />} title="Cliente" />
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <Field label="Nome do cliente">
+                <Input
+                  value={input.clienteNome}
+                  onChange={(e) => set("clienteNome", e.target.value)}
+                  placeholder="Ex.: João da Silva"
+                />
+              </Field>
+              <Field
+                label="Telefone (WhatsApp)"
+                helper={
+                  input.clienteTelefone && !normalizeWhatsAppPhone(input.clienteTelefone)
+                    ? "Telefone inválido — informe DDD + número"
+                    : "Ex.: (61) 99999-9999"
+                }
+                warn={!!input.clienteTelefone && !normalizeWhatsAppPhone(input.clienteTelefone)}
+              >
+                <Input
+                  inputMode="tel"
+                  value={input.clienteTelefone}
+                  onChange={(e) => set("clienteTelefone", e.target.value)}
+                  placeholder="(61) 99999-9999"
+                />
+              </Field>
+            </div>
+          </Card>
+
           {/* Empreendimento */}
           <Card className="elev-1 p-5">
             <SectionHead icon={<Building2 className="h-4 w-4" />} title="Empreendimento" />

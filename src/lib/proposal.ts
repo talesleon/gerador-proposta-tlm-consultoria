@@ -9,6 +9,8 @@ export const MAX_PS_PARCELAS: Record<Builder, number> = {
 
 export interface ProposalInput {
   builder: Builder;
+  clienteNome: string;
+  clienteTelefone: string;
   empreendimento: string;
   unidade: string;
   tipologia: string;
@@ -82,6 +84,16 @@ export function parseBRLInput(s: string): number {
   const cleaned = s.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Extrai apenas dígitos de um telefone e garante prefixo 55 (Brasil).
+ * Retorna string vazia se não houver dígitos suficientes.
+ */
+export function normalizeWhatsAppPhone(raw: string): string {
+  const digits = (raw || "").replace(/\D/g, "");
+  if (digits.length < 10) return "";
+  return digits.startsWith("55") ? digits : `55${digits}`;
 }
 
 /**
