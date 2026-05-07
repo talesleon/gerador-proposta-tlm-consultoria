@@ -180,22 +180,34 @@ function Index() {
 
       {/* App bar Material */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/90 backdrop-blur elev-1">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
           <div
             className="flex h-9 w-9 items-center justify-center rounded-md"
             style={{ background: "var(--ink)" }}
           >
             <Building2 className="h-5 w-5" style={{ color: "var(--gold)" }} />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-[140px]">
             <h1 className="text-lg font-bold leading-tight text-foreground truncate">
               Gerador de Proposta
+              {editingSku && (
+                <span className="ml-2 text-xs font-mono text-primary">{editingSku}</span>
+              )}
             </h1>
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               TLM Negócios Imobiliários
             </p>
           </div>
-          <Badge variant="secondary" className="hidden sm:inline-flex">
+          <div className="relative flex-1 min-w-[200px] max-w-md order-3 sm:order-2">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por nº da proposta ou telefone…"
+              className="pl-8 h-9"
+            />
+          </div>
+          <Badge variant="secondary" className="hidden sm:inline-flex order-2 sm:order-3">
             {input.builder}
           </Badge>
         </div>
