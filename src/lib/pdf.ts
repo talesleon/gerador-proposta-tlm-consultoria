@@ -297,10 +297,11 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     y += 3;
 
     if (mesesObra > 0 && input.seguroFinal > 0) {
+      const mediaParcela = evo.reduce((s, p) => s + p.valor, 0) / evo.length;
       doc.setFontSize(6.2);
       setColor(GOLD_SOFT);
       txt(
-        `média ±${formatBRLCompact(input.seguroFinal / mesesObra)}/mês · ${mesesObra} meses`,
+        `média ±${formatBRLCompact(mediaParcela)}/mês · ${mesesObra} meses`,
         W - M,
         y,
         { align: "right" },

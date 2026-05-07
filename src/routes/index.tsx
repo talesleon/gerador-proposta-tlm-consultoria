@@ -750,9 +750,9 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
                     <span>±{formatBRLCompact(input.seguroInicial)} · hoje</span>
                     <span>±{formatBRLCompact(input.seguroFinal)} · entrega</span>
                   </div>
-                  {input.seguroFinal > 0 && (
+                  {input.seguroFinal > 0 && evo.length > 0 && (
                     <p className="text-[9px] opacity-70 text-center mt-0.5">
-                      média ±{formatBRLCompact(input.seguroFinal / m)}/mês · {m} meses
+                      média ±{formatBRLCompact(evo.reduce((s, p) => s + p.valor, 0) / evo.length)}/mês · {m} meses
                     </p>
                   )}
                 </div>
