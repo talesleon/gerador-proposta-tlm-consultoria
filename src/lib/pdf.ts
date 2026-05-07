@@ -244,18 +244,72 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   entradaRow("Pró-soluto", input.psParcelas, psParcela, c.ps, "boleto c/ correção");
   y += 1;
 
-  // Fase 2 — Seguro
+  // Fase 2 — Seguro (gráfico de evolução)
   phaseTitle("2", "Seguro de Obra");
-  subRow("Inicial", formatBRLCompact(input.seguroInicial));
   const mesesObra = tempoObraMeses(input.entrega);
-  const mediaSeguro = mesesObra > 0 ? input.seguroFinal / mesesObra : 0;
-  subRow(
-    "Final (~)",
-    formatBRLCompact(input.seguroFinal),
-    mesesObra > 0 && input.seguroFinal > 0
-      ? `média ±${formatBRLCompact(mediaSeguro)}/mês · ${mesesObra} meses`
-      : undefined,
+  const evo = seguroEvolucao(
+    input.seguroInicial,
+    input.seguroFinal,
+    mesesObra,
+    input.seguroMarcos,
   );
+
+  if (evo.length >= 2) {
+    // Legenda
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    setColor(TEXT_SOFT);
+    txt("Evolui junto com a obra", M + 2, y);
+    y += 3.5;
+
+    // Gráfico de barras
+    const chartH = 14;
+    const chartW = CW - 4;
+    const x0 = M + 2;
+    const y0 = y;
+    const max = evo[evo.length - 1].valor;
+    const gap = 0.8;
+    const barW = (chartW - gap * (evo.length - 1)) / evo.length;
+
+    evo.forEach((p, i) => {
+      const h = Math.max(0.8, (p.valor / max) * chartH);
+      const bx = x0 + i * (barW + gap);
+      const by = y0 + (chartH - h);
+      // cor: último em dourado pleno, demais em dourado suave
+      if (i === evo.length - 1) doc.setFillColor(GOLD);
+      else doc.setFillColor(GOLD_SOFT);
+      doc.rect(bx, by, barW, h, "F");
+    });
+
+    // Linha de base
+    doc.setDrawColor(80, 80, 80);
+    doc.setLineWidth(0.15);
+    doc.line(x0, y0 + chartH, x0 + chartW, y0 + chartH);
+    y = y0 + chartH + 3;
+
+    // Rótulos extremos
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    setColor(MUTED);
+    txt(`±${formatBRLCompact(input.seguroInicial)} · hoje`, M + 2, y);
+    txt(`±${formatBRLCompact(input.seguroFinal)} · entrega`, W - M, y, { align: "right" });
+    y += 3;
+
+    if (mesesObra > 0 && input.seguroFinal > 0) {
+      doc.setFontSize(6.2);
+      setColor(GOLD_SOFT);
+      txt(
+        `média ±${formatBRLCompact(input.seguroFinal / mesesObra)}/mês · ${mesesObra} meses`,
+        W - M,
+        y,
+        { align: "right" },
+      );
+      y += 3;
+    }
+  } else {
+    subRow("Inicial", formatBRLCompact(input.seguroInicial));
+    subRow("Final (~)", formatBRLCompact(input.seguroFinal));
+  }
   y += 1;
 
   // Fase 3 — Pós-obra
