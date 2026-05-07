@@ -16,6 +16,7 @@ import {
   MAX_PS_PARCELAS,
   normalizeWhatsAppPhone,
   parseBRLInput,
+  tempoObraMeses,
   todayBR,
   type Builder,
   type ProposalInput,
@@ -690,6 +691,17 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
           <PreviewPhase num="2" title="Seguro de Obra">
             <PreviewRow label="Inicial" value={formatBRLCompact(input.seguroInicial)} />
             <PreviewRow label="Final (≈)" value={formatBRLCompact(input.seguroFinal)} />
+            {(() => {
+              const m = tempoObraMeses(input.entrega);
+              if (m > 0 && input.seguroFinal > 0) {
+                return (
+                  <p className="text-[9px] opacity-70 px-1 -mt-1 text-right">
+                    média ±{formatBRLCompact(input.seguroFinal / m)}/mês · {m} meses
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </PreviewPhase>
           <PreviewPhase num="3" title="Pós-obra">
             <p className="text-[11px] opacity-80 leading-relaxed px-1">
