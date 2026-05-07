@@ -24,6 +24,7 @@ export interface ProposalInput {
   psParcelas: number;
   seguroInicial: number;
   seguroFinal: number;
+  seguroMarcos: number; // qtd de marcos trimestrais no gráfico (0 = auto)
   posObraInicio: string;
 }
 
