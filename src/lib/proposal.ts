@@ -163,6 +163,10 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push("");
   L.push(`   • Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
   L.push(`   • Final: ±${formatBRLCompact(input.seguroFinal)}`);
+  const meses = tempoObraMeses(input.entrega);
+  if (meses > 0 && input.seguroFinal > 0) {
+    L.push(`   • Média: ±${formatBRLCompact(input.seguroFinal / meses)} / mês (${meses} meses de obra)`);
+  }
   L.push("");
   L.push(`*3.  PÓS-OBRA*`);
   L.push("");
