@@ -16,6 +16,7 @@ import {
   MAX_PS_PARCELAS,
   normalizeWhatsAppPhone,
   parseBRLInput,
+  tempoObraMeses,
   todayBR,
   type Builder,
   type ProposalInput,
