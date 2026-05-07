@@ -77,6 +77,7 @@ const DEFAULT: ProposalInput = {
   psParcelas: 84,
   seguroInicial: 0,
   seguroFinal: 0,
+  seguroMarcos: 0,
   posObraInicio: "",
 };
 
