@@ -340,7 +340,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   doc.setFontSize(5.8);
   setColor("#5a5a5a");
   const disc = wrap(
-    "Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias.",
+    "Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias.",
     CW,
   );
   let fy = footerY + 4;
