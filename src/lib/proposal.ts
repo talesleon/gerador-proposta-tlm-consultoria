@@ -19,6 +19,7 @@ export interface ProposalInput {
   vv: number;
   va: number;
   saOverride: number | null;
+  ec: number;
   saParcelas: number;
   psParcelas: number;
   seguroInicial: number;
@@ -31,8 +32,10 @@ export interface ProposalComputed {
   ve: number;
   saDefault: number;
   sa: number;
+  ec: number;
   ps: number;
   saValid: boolean;
+  ecValid: boolean;
   psValid: boolean;
   psMax: number;
 }
@@ -42,15 +45,18 @@ export function compute(input: ProposalInput): ProposalComputed {
   const ve = Math.max(0, input.vv - vf);
   const saDefault = input.vv * 0.02;
   const sa = input.saOverride ?? saDefault;
-  const ps = Math.max(0, ve - sa);
+  const ec = Math.max(0, input.ec || 0);
+  const ps = Math.max(0, ve - sa - ec);
   const psMax = MAX_PS_PARCELAS[input.builder];
   return {
     vf,
     ve,
     saDefault,
     sa,
+    ec,
     ps,
     saValid: sa >= 0 && sa <= ve,
+    ecValid: ec >= 0 && sa + ec <= ve,
     psValid: input.psParcelas >= 1 && input.psParcelas <= psMax,
     psMax,
   };

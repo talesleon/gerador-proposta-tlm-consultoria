@@ -71,6 +71,7 @@ const DEFAULT: ProposalInput = {
   vv: 0,
   va: 0,
   saOverride: null,
+  ec: 0,
   saParcelas: 12,
   psParcelas: 84,
   seguroInicial: 0,
@@ -386,7 +387,19 @@ function Index() {
                 </Field>
               </div>
 
-              <Computed label="P.S · Pró-soluto (V.E − S.A)" value={formatBRL(c.ps)} highlight />
+              <Field
+                label="E.C — Entrada Cliente"
+                helper={
+                  !c.ecValid
+                    ? "S.A + E.C maior que V.E"
+                    : "Aceita 0. Será diminuído do P.S."
+                }
+                warn={!c.ecValid}
+              >
+                <MoneyInput value={input.ec} onChange={(n) => set("ec", n)} />
+              </Field>
+
+              <Computed label="P.S · Pró-soluto (V.E − S.A − E.C)" value={formatBRL(c.ps)} highlight />
 
               <Field
                 label={`Parcelas do Pró-soluto (boleto) · máx ${psMax}x`}
