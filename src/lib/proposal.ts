@@ -24,6 +24,7 @@ export interface ProposalInput {
   psParcelas: number;
   seguroInicial: number;
   seguroFinal: number;
+  seguroMarcos: number; // qtd de marcos trimestrais no gráfico (0 = auto)
   posObraInicio: string;
 }
 
@@ -159,13 +160,30 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`     ${input.psParcelas}x no boleto c/ correção`);
   L.push(`     total ${formatBRL(c.ps)}`);
   L.push("");
-  L.push(`*2.  SEGURO DE OBRA*`);
+  L.push(`*2.  SEGURO DE OBRA*  _(evolui junto com a obra)_`);
   L.push("");
-  L.push(`   • Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
-  L.push(`   • Final: ±${formatBRLCompact(input.seguroFinal)}`);
   const meses = tempoObraMeses(input.entrega);
-  if (meses > 0 && input.seguroFinal > 0) {
-    L.push(`   • Média: ±${formatBRLCompact(input.seguroFinal / meses)} / mês (${meses} meses de obra)`);
+  const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, meses, input.seguroMarcos);
+  if (evo.length >= 2) {
+    const blocks = "▁▂▃▄▅▆▇█";
+    const max = evo[evo.length - 1].valor;
+    const min = evo[0].valor;
+    const spark = evo
+      .map((p) => {
+        const t = max > min ? (p.valor - min) / (max - min) : 0;
+        return blocks[Math.min(blocks.length - 1, Math.round(t * (blocks.length - 1)))];
+      })
+      .join("");
+    L.push(`   ${spark}`);
+    L.push(
+      `   Começa em ±${formatBRLCompact(input.seguroInicial)} e chega a ±${formatBRLCompact(input.seguroFinal)} perto da entrega.`,
+    );
+    if (input.seguroFinal > 0) {
+      L.push(`   Média: ±${formatBRLCompact(input.seguroFinal / meses)} / mês (${meses} meses de obra)`);
+    }
+  } else {
+    L.push(`   • Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
+    L.push(`   • Final: ±${formatBRLCompact(input.seguroFinal)}`);
   }
   L.push("");
   L.push(`*3.  PÓS-OBRA*`);
@@ -219,3 +237,32 @@ export function tempoObraMeses(entregaRaw: string, ref: Date = new Date()): numb
   const diff = (e.year - ref.getFullYear()) * 12 + (e.month - ref.getMonth());
   return Math.max(1, diff);
 }
+
+/**
+ * Gera marcos trimestrais da evolução do seguro.
+ * - n: quantidade de marcos (mínimo 2). Se 0/inválido, usa auto = max(2, ceil(meses/3)).
+ * - Curva levemente exponencial (k=1.6) para refletir aceleração no fim da obra.
+ * Retorna array com { mes, valor } onde mes 0 = início, último = entrega.
+ */
+export function seguroEvolucao(
+  inicial: number,
+  final: number,
+  meses: number,
+  n: number,
+): { mes: number; valor: number }[] {
+  if (meses <= 0 || final <= 0) return [];
+  const auto = Math.max(2, Math.ceil(meses / 3));
+  const count = n && n >= 2 ? Math.min(n, 12) : auto;
+  const k = 1.6;
+  const out: { mes: number; valor: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1); // 0..1
+    const eased = Math.pow(t, k);
+    out.push({
+      mes: Math.round(t * meses),
+      valor: inicial + (final - inicial) * eased,
+    });
+  }
+  return out;
+}
+
