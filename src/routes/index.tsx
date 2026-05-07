@@ -50,7 +50,7 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Gerador de Proposta — TLM Negócios Imobiliários" },
+      { title: "Gerador de Proposta — Tales Medeiros Consultoria Imobiliária" },
       {
         name: "description",
         content:
@@ -196,7 +196,7 @@ function Index() {
               )}
             </h1>
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              TLM Negócios Imobiliários
+              Tales Medeiros Consultoria Imobiliária
             </p>
           </div>
           <div className="relative flex-1 min-w-[200px] max-w-md order-3 sm:order-2">
