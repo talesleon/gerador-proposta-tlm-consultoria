@@ -443,6 +443,16 @@ function Index() {
           <ProposalPreview input={input} />
 
           <Card className="elev-2 p-4 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={handleSaveProposal} className="h-10">
+                <Save className="h-4 w-4" />
+                {editingId ? "Atualizar" : "Gerar proposta"}
+              </Button>
+              <Button onClick={handleNewProposal} variant="outline" className="h-10">
+                <Plus className="h-4 w-4" />
+                Nova
+              </Button>
+            </div>
             <Button
               onClick={handleDownloadPDF}
               className="w-full h-11 font-semibold tracking-wide"
@@ -461,9 +471,17 @@ function Index() {
               </Button>
             </div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground text-center pt-1">
-              Proposta gerada em {todayBR()}
+              {editingSku ? `${editingSku} · ` : ""}Proposta gerada em {todayBR()}
             </p>
           </Card>
+
+          <ProposalsList
+            items={filtered}
+            query={query}
+            editingId={editingId}
+            onEdit={handleEditProposal}
+            onDelete={handleDeleteProposal}
+          />
         </aside>
       </main>
     </div>
