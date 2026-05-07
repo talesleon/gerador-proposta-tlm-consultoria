@@ -43,7 +43,6 @@ import {
   Search,
   Pencil,
   Trash2,
-  XCircle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
