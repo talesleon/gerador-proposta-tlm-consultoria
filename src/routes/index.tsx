@@ -556,25 +556,19 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
 
         <div className="bg-white/[0.03] border-t border-white/10">
           <PreviewPhase num="1" title="Entrada">
-            <PreviewRow
+            <PreviewEntradaRow
               label="Sinal ato"
-              value={formatBRL(c.sa)}
-              note={`até ${input.saParcelas}x cartão`}
-              note2={
-                input.saParcelas > 0 && c.sa > 0
-                  ? `≈ ${formatBRL(c.sa / input.saParcelas)} / mês`
-                  : undefined
-              }
+              parcelas={input.saParcelas}
+              parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
+              total={c.sa}
+              via="no cartão"
             />
-            <PreviewRow
+            <PreviewEntradaRow
               label="Pró-soluto"
-              value={formatBRL(c.ps)}
-              note={`até ${input.psParcelas}x boleto c/ correção`}
-              note2={
-                input.psParcelas > 0 && c.ps > 0
-                  ? `≈ ${formatBRL(c.ps / input.psParcelas)} / mês`
-                  : undefined
-              }
+              parcelas={input.psParcelas}
+              parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
+              total={c.ps}
+              via="boleto c/ correção"
             />
           </PreviewPhase>
           <PreviewPhase num="2" title="Seguro de Obra">
