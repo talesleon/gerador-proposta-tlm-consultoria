@@ -81,8 +81,20 @@ const DEFAULT: ProposalInput = {
 
 function Index() {
   const [input, setInput] = useState<ProposalInput>(DEFAULT);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSku, setEditingSku] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [proposals, setProposals] = useState<SavedProposal[]>([]);
+
   const c = useMemo(() => compute(input), [input]);
   const text = useMemo(() => buildWhatsAppText(input, c), [input, c]);
+
+  useEffect(() => {
+    setProposals(listProposals());
+  }, []);
+
+  const refresh = () => setProposals(listProposals());
+  const filtered = useMemo(() => searchProposals(query), [query, proposals]);
 
   const set = <K extends keyof ProposalInput>(k: K, v: ProposalInput[K]) =>
     setInput((p) => ({ ...p, [k]: v }));
@@ -114,8 +126,47 @@ function Index() {
   function handleDownloadPDF() {
     const doc = generateProposalPDF(input, c);
     const safe = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "");
-    doc.save(`Proposta_${safe(input.empreendimento)}_${safe(input.unidade)}.pdf`);
+    const prefix = editingSku ? `${editingSku}_` : "";
+    doc.save(`${prefix}Proposta_${safe(input.empreendimento)}_${safe(input.unidade)}.pdf`);
     toast.success("PDF gerado!");
+  }
+
+  function handleSaveProposal() {
+    if (editingId) {
+      const upd = updateProposal(editingId, input);
+      if (upd) {
+        toast.success(`Proposta ${upd.sku} atualizada`);
+        refresh();
+      }
+    } else {
+      const created = createProposal(input);
+      setEditingId(created.id);
+      setEditingSku(created.sku);
+      toast.success(`Proposta ${created.sku} gerada`);
+      refresh();
+    }
+  }
+
+  function handleNewProposal() {
+    setInput(DEFAULT);
+    setEditingId(null);
+    setEditingSku(null);
+    toast.info("Nova proposta");
+  }
+
+  function handleEditProposal(p: SavedProposal) {
+    setInput(p.input);
+    setEditingId(p.id);
+    setEditingSku(p.sku);
+    toast.info(`Editando ${p.sku}`);
+  }
+
+  function handleDeleteProposal(p: SavedProposal) {
+    if (!confirm(`Excluir/inutilizar proposta ${p.sku}? O número não será reaproveitado.`)) return;
+    cancelProposal(p.id);
+    if (editingId === p.id) handleNewProposal();
+    refresh();
+    toast.success(`Proposta ${p.sku} inutilizada`);
   }
 
   const psMax = MAX_PS_PARCELAS[input.builder];
