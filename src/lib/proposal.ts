@@ -194,7 +194,7 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(sep);
   L.push("");
   L.push(
-    `Tales Medeiros Consultoria Imobiliária ·  Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias. ${todayBR()}`,
+    `Tales Medeiros Consultoria Imobiliária ·  Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias. ${todayBR()}`,
   );
 
   return L.join("\n");
