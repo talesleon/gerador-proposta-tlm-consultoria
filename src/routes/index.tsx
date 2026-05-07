@@ -71,6 +71,7 @@ const DEFAULT: ProposalInput = {
   vv: 0,
   va: 0,
   saOverride: null,
+  ec: 0,
   saParcelas: 12,
   psParcelas: 84,
   seguroInicial: 0,
