@@ -185,3 +185,33 @@ export function todayBR(): string {
     year: "numeric",
   });
 }
+
+const MESES_PT: Record<string, number> = {
+  jan: 0, fev: 1, mar: 2, abr: 3, mai: 4, jun: 5,
+  jul: 6, ago: 7, set: 8, out: 9, nov: 10, dez: 11,
+};
+
+/** "Fev/2029", "02/2029", "fevereiro 2029" → {month, year} */
+export function parseEntrega(raw: string): { month: number; year: number } | null {
+  if (!raw) return null;
+  const s = raw.trim().toLowerCase();
+  const m1 = s.match(/^(\d{1,2})[\/\-\s](\d{4})$/);
+  if (m1) {
+    const mo = Number(m1[1]) - 1;
+    if (mo >= 0 && mo <= 11) return { month: mo, year: Number(m1[2]) };
+  }
+  const m2 = s.match(/^([a-zà-ú]+)[\/\-\s]+(\d{4})$/);
+  if (m2) {
+    const key = m2[1].slice(0, 3);
+    if (key in MESES_PT) return { month: MESES_PT[key], year: Number(m2[2]) };
+  }
+  return null;
+}
+
+/** Meses entre hoje e a entrega. 0 se inválido, mínimo 1 caso contrário. */
+export function tempoObraMeses(entregaRaw: string, ref: Date = new Date()): number {
+  const e = parseEntrega(entregaRaw);
+  if (!e) return 0;
+  const diff = (e.year - ref.getFullYear()) * 12 + (e.month - ref.getMonth());
+  return Math.max(1, diff);
+}
