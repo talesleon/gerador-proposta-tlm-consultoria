@@ -160,13 +160,30 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`     ${input.psParcelas}x no boleto c/ correção`);
   L.push(`     total ${formatBRL(c.ps)}`);
   L.push("");
-  L.push(`*2.  SEGURO DE OBRA*`);
+  L.push(`*2.  SEGURO DE OBRA*  _(evolui junto com a obra)_`);
   L.push("");
-  L.push(`   • Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
-  L.push(`   • Final: ±${formatBRLCompact(input.seguroFinal)}`);
   const meses = tempoObraMeses(input.entrega);
-  if (meses > 0 && input.seguroFinal > 0) {
-    L.push(`   • Média: ±${formatBRLCompact(input.seguroFinal / meses)} / mês (${meses} meses de obra)`);
+  const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, meses, input.seguroMarcos);
+  if (evo.length >= 2) {
+    const blocks = "▁▂▃▄▅▆▇█";
+    const max = evo[evo.length - 1].valor;
+    const min = evo[0].valor;
+    const spark = evo
+      .map((p) => {
+        const t = max > min ? (p.valor - min) / (max - min) : 0;
+        return blocks[Math.min(blocks.length - 1, Math.round(t * (blocks.length - 1)))];
+      })
+      .join("");
+    L.push(`   ${spark}`);
+    L.push(
+      `   Começa em ±${formatBRLCompact(input.seguroInicial)} e chega a ±${formatBRLCompact(input.seguroFinal)} perto da entrega.`,
+    );
+    if (input.seguroFinal > 0) {
+      L.push(`   Média: ±${formatBRLCompact(input.seguroFinal / meses)} / mês (${meses} meses de obra)`);
+    }
+  } else {
+    L.push(`   • Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
+    L.push(`   • Final: ±${formatBRLCompact(input.seguroFinal)}`);
   }
   L.push("");
   L.push(`*3.  PÓS-OBRA*`);
