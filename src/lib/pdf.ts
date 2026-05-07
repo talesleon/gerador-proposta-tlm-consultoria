@@ -247,7 +247,15 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   // Fase 2 — Seguro
   phaseTitle("2", "Seguro de Obra");
   subRow("Inicial", formatBRLCompact(input.seguroInicial));
-  subRow("Final (~)", formatBRLCompact(input.seguroFinal));
+  const mesesObra = tempoObraMeses(input.entrega);
+  const mediaSeguro = mesesObra > 0 ? input.seguroFinal / mesesObra : 0;
+  subRow(
+    "Final (~)",
+    formatBRLCompact(input.seguroFinal),
+    mesesObra > 0 && input.seguroFinal > 0
+      ? `média ±${formatBRLCompact(mediaSeguro)}/mês · ${mesesObra} meses`
+      : undefined,
+  );
   y += 1;
 
   // Fase 3 — Pós-obra
