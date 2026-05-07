@@ -199,22 +199,48 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     y += 2.2;
   };
 
-  // Fase 1 — Entrada
+  // Fase 1 — Entrada (parcela em destaque, total e qtd menores)
   phaseTitle("1", "Entrada");
   const saParcela = input.saParcelas > 0 ? c.sa / input.saParcelas : 0;
   const psParcela = input.psParcelas > 0 ? c.ps / input.psParcelas : 0;
-  subRow(
-    "Sinal ato",
-    formatBRL(c.sa),
-    `até ${input.saParcelas}x no cartão`,
-    saParcela > 0 ? `~ ${formatBRL(saParcela)} / mês` : undefined,
-  );
-  subRow(
-    "Pró-soluto",
-    formatBRL(c.ps),
-    `até ${input.psParcelas}x boleto c/ correção`,
-    psParcela > 0 ? `~ ${formatBRL(psParcela)} / mês` : undefined,
-  );
+
+  const entradaRow = (
+    label: string,
+    parcelas: number,
+    parcela: number,
+    total: number,
+    via: string,
+  ) => {
+    // Label à esquerda
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    setColor(TEXT_SOFT);
+    txt(label, M + 2, y);
+
+    // Parcela em destaque à direita
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    setColor(WHITE);
+    txt(parcela > 0 ? formatBRL(parcela) : "—", W - M, y, { align: "right" });
+    y += 4;
+
+    // Linha menor: "Nx no cartão"
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.2);
+    setColor(GOLD_SOFT);
+    txt(`${parcelas}x ${via}`, W - M, y, { align: "right" });
+    y += 2.8;
+
+    // Total ainda menor
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5.8);
+    setColor(MUTED);
+    txt(`total ${formatBRL(total)}`, W - M, y, { align: "right" });
+    y += 3.4;
+  };
+
+  entradaRow("Sinal ato", input.saParcelas, saParcela, c.sa, "no cartão");
+  entradaRow("Pró-soluto", input.psParcelas, psParcela, c.ps, "boleto c/ correção");
   y += 1;
 
   // Fase 2 — Seguro
