@@ -442,6 +442,25 @@ function Index() {
                 value={input.seguroFinal}
                 onChange={(n) => set("seguroFinal", n)}
               />
+              <Field
+                label="Marcos do gráfico (trimestres)"
+                helper={
+                  input.seguroMarcos === 0
+                    ? `Auto: ${Math.max(2, Math.ceil(tempoObraMeses(input.entrega) / 3)) || 2} marcos`
+                    : `${input.seguroMarcos} marcos no gráfico`
+                }
+              >
+                <Input
+                  inputMode="numeric"
+                  value={String(input.seguroMarcos)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    const n = digits === "" ? 0 : Math.min(12, Number(digits));
+                    set("seguroMarcos", n);
+                  }}
+                  placeholder="0 = automático"
+                />
+              </Field>
               <Field label="Início do pós-obra (mês/ano)">
                 <Input
                   value={input.posObraInicio}
