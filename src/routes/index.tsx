@@ -710,18 +710,53 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
             />
           </PreviewPhase>
           <PreviewPhase num="2" title="Seguro de Obra">
-            <PreviewRow label="Inicial" value={formatBRLCompact(input.seguroInicial)} />
-            <PreviewRow label="Final (≈)" value={formatBRLCompact(input.seguroFinal)} />
             {(() => {
               const m = tempoObraMeses(input.entrega);
-              if (m > 0 && input.seguroFinal > 0) {
+              const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, m, input.seguroMarcos);
+              if (evo.length < 2) {
                 return (
-                  <p className="text-[9px] opacity-70 px-1 -mt-1 text-right">
-                    média ±{formatBRLCompact(input.seguroFinal / m)}/mês · {m} meses
-                  </p>
+                  <>
+                    <PreviewRow label="Inicial" value={formatBRLCompact(input.seguroInicial)} />
+                    <PreviewRow label="Final (≈)" value={formatBRLCompact(input.seguroFinal)} />
+                  </>
                 );
               }
-              return null;
+              const max = evo[evo.length - 1].valor;
+              return (
+                <div className="px-1">
+                  <p className="text-[10px] opacity-80 mb-1.5">
+                    Evolui junto com a obra · começa pequeno e cresce até a entrega
+                  </p>
+                  <div className="flex items-end gap-[3px] h-14 border-b border-white/15 pb-0.5">
+                    {evo.map((p, i) => {
+                      const h = Math.max(6, (p.valor / max) * 100);
+                      return (
+                        <div
+                          key={i}
+                          className="flex-1 rounded-sm"
+                          style={{
+                            height: `${h}%`,
+                            background:
+                              i === evo.length - 1
+                                ? "var(--gold)"
+                                : "color-mix(in oklab, var(--gold) 60%, transparent)",
+                          }}
+                          title={`Mês ${p.mes}: ${formatBRLCompact(p.valor)}`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between text-[9px] opacity-70 mt-1">
+                    <span>±{formatBRLCompact(input.seguroInicial)} · hoje</span>
+                    <span>±{formatBRLCompact(input.seguroFinal)} · entrega</span>
+                  </div>
+                  {input.seguroFinal > 0 && (
+                    <p className="text-[9px] opacity-70 text-center mt-0.5">
+                      média ±{formatBRLCompact(input.seguroFinal / m)}/mês · {m} meses
+                    </p>
+                  )}
+                </div>
+              );
             })()}
           </PreviewPhase>
           <PreviewPhase num="3" title="Pós-obra">
