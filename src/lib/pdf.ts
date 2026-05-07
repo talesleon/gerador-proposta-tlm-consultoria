@@ -213,32 +213,32 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     total: number,
     via: string,
   ) => {
-    // Label à esquerda
+    // Label à esquerda (alinhado à parcela em destaque)
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     setColor(TEXT_SOFT);
-    txt(label, M + 2, y);
+    txt(label, M + 2, y + 1);
 
     // Parcela em destaque à direita
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     setColor(WHITE);
-    txt(parcela > 0 ? formatBRL(parcela) : "—", W - M, y, { align: "right" });
-    y += 4;
+    txt(parcela > 0 ? formatBRL(parcela) : "—", W - M, y + 1.5, { align: "right" });
+    y += 5.5;
 
     // Linha menor: "Nx no cartão"
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.2);
     setColor(GOLD_SOFT);
     txt(`${parcelas}x ${via}`, W - M, y, { align: "right" });
-    y += 2.8;
+    y += 3.2;
 
     // Total ainda menor
     doc.setFont("helvetica", "normal");
     doc.setFontSize(5.8);
     setColor(MUTED);
     txt(`total ${formatBRL(total)}`, W - M, y, { align: "right" });
-    y += 3.4;
+    y += 5;
   };
 
   entradaRow("Sinal ato", input.saParcelas, saParcela, c.sa, "no cartão");
