@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,29 @@ import {
   type ProposalInput,
 } from "@/lib/proposal";
 import { generateProposalPDF } from "@/lib/pdf";
-import { Copy, Download, RotateCcw, Building2, Calculator, FileText, Share2, User } from "lucide-react";
+import {
+  cancelProposal,
+  createProposal,
+  listProposals,
+  searchProposals,
+  updateProposal,
+  type SavedProposal,
+} from "@/lib/storage";
+import {
+  Copy,
+  Download,
+  RotateCcw,
+  Building2,
+  Calculator,
+  FileText,
+  Share2,
+  User,
+  Save,
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -58,8 +80,20 @@ const DEFAULT: ProposalInput = {
 
 function Index() {
   const [input, setInput] = useState<ProposalInput>(DEFAULT);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSku, setEditingSku] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [proposals, setProposals] = useState<SavedProposal[]>([]);
+
   const c = useMemo(() => compute(input), [input]);
   const text = useMemo(() => buildWhatsAppText(input, c), [input, c]);
+
+  useEffect(() => {
+    setProposals(listProposals());
+  }, []);
+
+  const refresh = () => setProposals(listProposals());
+  const filtered = useMemo(() => searchProposals(query), [query, proposals]);
 
   const set = <K extends keyof ProposalInput>(k: K, v: ProposalInput[K]) =>
     setInput((p) => ({ ...p, [k]: v }));
@@ -91,8 +125,47 @@ function Index() {
   function handleDownloadPDF() {
     const doc = generateProposalPDF(input, c);
     const safe = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "");
-    doc.save(`Proposta_${safe(input.empreendimento)}_${safe(input.unidade)}.pdf`);
+    const prefix = editingSku ? `${editingSku}_` : "";
+    doc.save(`${prefix}Proposta_${safe(input.empreendimento)}_${safe(input.unidade)}.pdf`);
     toast.success("PDF gerado!");
+  }
+
+  function handleSaveProposal() {
+    if (editingId) {
+      const upd = updateProposal(editingId, input);
+      if (upd) {
+        toast.success(`Proposta ${upd.sku} atualizada`);
+        refresh();
+      }
+    } else {
+      const created = createProposal(input);
+      setEditingId(created.id);
+      setEditingSku(created.sku);
+      toast.success(`Proposta ${created.sku} gerada`);
+      refresh();
+    }
+  }
+
+  function handleNewProposal() {
+    setInput(DEFAULT);
+    setEditingId(null);
+    setEditingSku(null);
+    toast.info("Nova proposta");
+  }
+
+  function handleEditProposal(p: SavedProposal) {
+    setInput(p.input);
+    setEditingId(p.id);
+    setEditingSku(p.sku);
+    toast.info(`Editando ${p.sku}`);
+  }
+
+  function handleDeleteProposal(p: SavedProposal) {
+    if (!confirm(`Excluir/inutilizar proposta ${p.sku}? O número não será reaproveitado.`)) return;
+    cancelProposal(p.id);
+    if (editingId === p.id) handleNewProposal();
+    refresh();
+    toast.success(`Proposta ${p.sku} inutilizada`);
   }
 
   const psMax = MAX_PS_PARCELAS[input.builder];
@@ -106,22 +179,34 @@ function Index() {
 
       {/* App bar Material */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/90 backdrop-blur elev-1">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
           <div
             className="flex h-9 w-9 items-center justify-center rounded-md"
             style={{ background: "var(--ink)" }}
           >
             <Building2 className="h-5 w-5" style={{ color: "var(--gold)" }} />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-[140px]">
             <h1 className="text-lg font-bold leading-tight text-foreground truncate">
               Gerador de Proposta
+              {editingSku && (
+                <span className="ml-2 text-xs font-mono text-primary">{editingSku}</span>
+              )}
             </h1>
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               TLM Negócios Imobiliários
             </p>
           </div>
-          <Badge variant="secondary" className="hidden sm:inline-flex">
+          <div className="relative flex-1 min-w-[200px] max-w-md order-3 sm:order-2">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por nº da proposta ou telefone…"
+              className="pl-8 h-9"
+            />
+          </div>
+          <Badge variant="secondary" className="hidden sm:inline-flex order-2 sm:order-3">
             {input.builder}
           </Badge>
         </div>
@@ -357,6 +442,16 @@ function Index() {
           <ProposalPreview input={input} />
 
           <Card className="elev-2 p-4 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={handleSaveProposal} className="h-10">
+                <Save className="h-4 w-4" />
+                {editingId ? "Atualizar" : "Gerar proposta"}
+              </Button>
+              <Button onClick={handleNewProposal} variant="outline" className="h-10">
+                <Plus className="h-4 w-4" />
+                Nova
+              </Button>
+            </div>
             <Button
               onClick={handleDownloadPDF}
               className="w-full h-11 font-semibold tracking-wide"
@@ -375,9 +470,17 @@ function Index() {
               </Button>
             </div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground text-center pt-1">
-              Proposta gerada em {todayBR()}
+              {editingSku ? `${editingSku} · ` : ""}Proposta gerada em {todayBR()}
             </p>
           </Card>
+
+          <ProposalsList
+            items={filtered}
+            query={query}
+            editingId={editingId}
+            onEdit={handleEditProposal}
+            onDelete={handleDeleteProposal}
+          />
         </aside>
       </main>
     </div>
@@ -556,25 +659,19 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
 
         <div className="bg-white/[0.03] border-t border-white/10">
           <PreviewPhase num="1" title="Entrada">
-            <PreviewRow
+            <PreviewEntradaRow
               label="Sinal ato"
-              value={formatBRL(c.sa)}
-              note={`até ${input.saParcelas}x cartão`}
-              note2={
-                input.saParcelas > 0 && c.sa > 0
-                  ? `≈ ${formatBRL(c.sa / input.saParcelas)} / mês`
-                  : undefined
-              }
+              parcelas={input.saParcelas}
+              parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
+              total={c.sa}
+              via="no cartão"
             />
-            <PreviewRow
+            <PreviewEntradaRow
               label="Pró-soluto"
-              value={formatBRL(c.ps)}
-              note={`até ${input.psParcelas}x boleto c/ correção`}
-              note2={
-                input.psParcelas > 0 && c.ps > 0
-                  ? `≈ ${formatBRL(c.ps / input.psParcelas)} / mês`
-                  : undefined
-              }
+              parcelas={input.psParcelas}
+              parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
+              total={c.ps}
+              via="boleto c/ correção"
             />
           </PreviewPhase>
           <PreviewPhase num="2" title="Seguro de Obra">
@@ -648,5 +745,128 @@ function PreviewRow({
         {note2 && <div className="text-[9px] opacity-60">{note2}</div>}
       </div>
     </div>
+  );
+}
+
+function PreviewEntradaRow({
+  label,
+  parcelas,
+  parcela,
+  total,
+  via,
+}: {
+  label: string;
+  parcelas: number;
+  parcela: number;
+  total: number;
+  via: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 py-1 border-b border-dashed border-white/5 last:border-b-0">
+      <div className="text-[12px] opacity-80">{label}</div>
+      <div className="text-right">
+        <div className="text-2xl font-bold leading-tight">
+          {parcela > 0 ? formatBRL(parcela) : "—"}
+        </div>
+        <div className="text-[9px] gold opacity-90">{parcelas}x {via}</div>
+        <div className="text-[9px] opacity-60">total {formatBRL(total)}</div>
+      </div>
+    </div>
+  );
+}
+
+function ProposalsList({
+  items,
+  query,
+  editingId,
+  onEdit,
+  onDelete,
+}: {
+  items: SavedProposal[];
+  query: string;
+  editingId: string | null;
+  onEdit: (p: SavedProposal) => void;
+  onDelete: (p: SavedProposal) => void;
+}) {
+  return (
+    <Card className="elev-1 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+          Propostas
+        </h3>
+        <Badge variant="secondary">{items.length}</Badge>
+      </div>
+      {items.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-4 text-center">
+          {query ? "Nenhuma proposta encontrada." : "Nenhuma proposta salva ainda."}
+        </p>
+      ) : (
+        <ul className="space-y-2 max-h-[420px] overflow-y-auto">
+          {items.map((p) => {
+            const isEditing = p.id === editingId;
+            const cancelled = p.status === "cancelled";
+            return (
+              <li
+                key={p.id}
+                className={`rounded-md border p-2.5 transition ${
+                  isEditing
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card"
+                } ${cancelled ? "opacity-60" : ""}`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] text-primary font-semibold">
+                        {p.sku}
+                      </span>
+                      {cancelled && (
+                        <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">
+                          INUTILIZADA
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm font-medium truncate">
+                      {p.input.clienteNome || "(sem cliente)"}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {p.input.empreendimento || "—"}
+                      {p.input.unidade ? ` · ${p.input.unidade}` : ""}
+                    </div>
+                    {p.input.clienteTelefone && (
+                      <div className="text-[10px] text-muted-foreground">
+                        {p.input.clienteTelefone}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      onClick={() => onEdit(p)}
+                      title="Alterar proposta"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    {!cancelled && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive hover:text-destructive"
+                        onClick={() => onDelete(p)}
+                        title="Excluir / inutilizar"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Card>
   );
 }
