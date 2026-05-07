@@ -644,3 +644,30 @@ function PreviewRow({
     </div>
   );
 }
+
+function PreviewEntradaRow({
+  label,
+  parcelas,
+  parcela,
+  total,
+  via,
+}: {
+  label: string;
+  parcelas: number;
+  parcela: number;
+  total: number;
+  via: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 py-1 border-b border-dashed border-white/5 last:border-b-0">
+      <div className="text-[12px] opacity-80">{label}</div>
+      <div className="text-right">
+        <div className="text-2xl font-bold leading-tight">
+          {parcela > 0 ? formatBRL(parcela) : "—"}
+        </div>
+        <div className="text-[9px] gold opacity-90">{parcelas}x {via}</div>
+        <div className="text-[9px] opacity-60">total {formatBRL(total)}</div>
+      </div>
+    </div>
+  );
+}
