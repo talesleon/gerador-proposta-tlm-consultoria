@@ -220,3 +220,32 @@ export function tempoObraMeses(entregaRaw: string, ref: Date = new Date()): numb
   const diff = (e.year - ref.getFullYear()) * 12 + (e.month - ref.getMonth());
   return Math.max(1, diff);
 }
+
+/**
+ * Gera marcos trimestrais da evolução do seguro.
+ * - n: quantidade de marcos (mínimo 2). Se 0/inválido, usa auto = max(2, ceil(meses/3)).
+ * - Curva levemente exponencial (k=1.6) para refletir aceleração no fim da obra.
+ * Retorna array com { mes, valor } onde mes 0 = início, último = entrega.
+ */
+export function seguroEvolucao(
+  inicial: number,
+  final: number,
+  meses: number,
+  n: number,
+): { mes: number; valor: number }[] {
+  if (meses <= 0 || final <= 0) return [];
+  const auto = Math.max(2, Math.ceil(meses / 3));
+  const count = n && n >= 2 ? Math.min(n, 12) : auto;
+  const k = 1.6;
+  const out: { mes: number; valor: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1); // 0..1
+    const eased = Math.pow(t, k);
+    out.push({
+      mes: Math.round(t * meses),
+      valor: inicial + (final - inicial) * eased,
+    });
+  }
+  return out;
+}
+
