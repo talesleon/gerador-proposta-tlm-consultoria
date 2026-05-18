@@ -58,7 +58,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   setColor(GOLD);
-  txt("TLM · PROPOSTA COMERCIAL", M, y);
+  txt("Tales Medeiros Consultor - Fluxo de Pagamento", M, y);
   y += 6;
 
   // Título empreendimento
