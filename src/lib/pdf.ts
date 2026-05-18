@@ -336,7 +336,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   });
 
   // Rodapé creme — fixo no fim, com altura segura
-  const footerH = 16;
+  const footerH = 22;
   const footerY = H - footerH;
 
   doc.setFillColor(CREAM);
@@ -344,6 +344,21 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   doc.setFillColor(GOLD);
   doc.rect(0, footerY, W, 0.7, "F");
 
+  // Disclaimer
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(5.6);
+  setColor("#5a5a5a");
+  const disc = wrap(
+    "Esta é uma simulação genérica. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias.",
+    CW,
+  );
+  let fy = footerY + 4;
+  disc.forEach((line) => {
+    txt(line, W / 2, fy, { align: "center" });
+    fy += 2.6;
+  });
+
+  // Assinatura
   doc.setFont("helvetica", "bold");
   doc.setFontSize(5.6);
   setColor(GOLD);
@@ -351,8 +366,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     `Tales Medeiros Consultor Imobiliário. Todos os Direitos Reservados. ${todayBR()}. Belo Horizonte, MG`,
     CW,
   );
-  const totalH = footerLines.length * 2.6;
-  let fy = footerY + (footerH - totalH) / 2 + 2;
+  fy += 1;
   footerLines.forEach((line) => {
     txt(line, W / 2, fy, { align: "center" });
     fy += 2.6;
