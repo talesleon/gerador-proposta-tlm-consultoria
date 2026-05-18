@@ -174,8 +174,12 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`     ${input.saParcelas}x no cartão`);
   L.push(`     total ${formatBRL(c.sa)}`);
   L.push("");
+  const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
   L.push(`   • Pró-soluto — *${formatBRL(psParcela)}*`);
-  L.push(`     ${input.psParcelas}x no boleto c/ correção`);
+  L.push(`     ${input.psParcelas}x no boleto`);
+  if (psCorrigida > 0) {
+    L.push(`     corrigida ≈ ${formatBRL(psCorrigida)} (0,5% a.m. até 36ª · 1,5% a.m. da 37ª à 84ª)`);
+  }
   L.push(`     total ${formatBRL(c.ps)}`);
   L.push("");
   L.push(`*2.  SEGURO DE OBRA*  _(evolui junto com a obra)_`);
