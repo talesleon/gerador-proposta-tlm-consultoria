@@ -149,7 +149,7 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push("");
 
   // Valores
-  L.push(`*VALORES*`);
+  L.push(`💰 *VALORES*`);
   L.push("");
   L.push(`Preço tabela: ${formatBRL(input.vt)}`);
   L.push("");
@@ -164,9 +164,9 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push("");
 
   // Pagamento
-  L.push(`*ESTRUTURA DE PAGAMENTO*`);
+  L.push(`📋 *ESTRUTURA DE PAGAMENTO*`);
   L.push("");
-  L.push(`*1.  ENTRADA*`);
+  L.push(`💳 *1.  ENTRADA*`);
   L.push("");
   const saParcela = input.saParcelas > 0 ? c.sa / input.saParcelas : 0;
   const psParcela = input.psParcelas > 0 ? c.ps / input.psParcelas : 0;
@@ -182,7 +182,7 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   }
   L.push(`     total ${formatBRL(c.ps)}`);
   L.push("");
-  L.push(`*2.  SEGURO DE OBRA*  _(evolui junto com a obra)_`);
+  L.push(`🏗️ *2.  SEGURO DE OBRA*  _(evolui junto com a obra)_`);
   L.push("");
   const meses = tempoObraMeses(input.entrega);
   const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, meses, input.seguroMarcos);
@@ -208,7 +208,7 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
     L.push(`   • Final: ±${formatBRLCompact(input.seguroFinal)}`);
   }
   L.push("");
-  L.push(`*3.  PÓS-OBRA*`);
+  L.push(`🔑 *3.  PÓS-OBRA*`);
   L.push("");
   L.push(`   • Financiamento direto com o banco`);
   L.push(`   • A partir de *${input.posObraInicio || "(definir)"}*`);
