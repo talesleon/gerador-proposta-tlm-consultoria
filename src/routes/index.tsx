@@ -705,6 +705,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               label="Pró-soluto"
               parcelas={input.psParcelas}
               parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
+              parcelaCorrigida={proSolutoParcelaCorrigida(c.ps, input.psParcelas)}
               total={c.ps}
               via="boleto c/ correção"
             />
