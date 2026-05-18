@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import {
   formatBRL,
   formatBRLCompact,
+  proSolutoParcelaCorrigida,
   seguroEvolucao,
   tempoObraMeses,
   todayBR,
@@ -212,28 +213,33 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     parcela: number,
     total: number,
     via: string,
+    parcelaCorrigida?: number,
   ) => {
-    // Label à esquerda (alinhado à parcela em destaque)
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     setColor(TEXT_SOFT);
     txt(label, M + 2, y + 1);
 
-    // Parcela em destaque à direita
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     setColor(WHITE);
     txt(parcela > 0 ? formatBRL(parcela) : "—", W - M, y + 1.5, { align: "right" });
     y += 5.5;
 
-    // Linha menor: "Nx no cartão"
+    if (parcelaCorrigida !== undefined && parcelaCorrigida > 0) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      setColor(GOLD_SOFT);
+      txt(`corrigida ≈ ${formatBRL(parcelaCorrigida)}`, W - M, y, { align: "right" });
+      y += 3;
+    }
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.2);
     setColor(GOLD_SOFT);
     txt(`${parcelas}x ${via}`, W - M, y, { align: "right" });
     y += 3.2;
 
-    // Total ainda menor
     doc.setFont("helvetica", "normal");
     doc.setFontSize(5.8);
     setColor(MUTED);
@@ -242,7 +248,8 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   };
 
   entradaRow("Sinal ato", input.saParcelas, saParcela, c.sa, "no cartão");
-  entradaRow("Pró-soluto", input.psParcelas, psParcela, c.ps, "boleto c/ correção");
+  const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
+  entradaRow("Pró-soluto", input.psParcelas, psParcela, c.ps, "boleto c/ correção", psCorrigida);
   y += 1;
 
   // Fase 2 — Seguro (gráfico de evolução)

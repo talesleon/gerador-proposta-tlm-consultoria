@@ -16,6 +16,7 @@ import {
   MAX_PS_PARCELAS,
   normalizeWhatsAppPhone,
   parseBRLInput,
+  proSolutoParcelaCorrigida,
   seguroEvolucao,
   tempoObraMeses,
   todayBR,
@@ -705,6 +706,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               label="Pró-soluto"
               parcelas={input.psParcelas}
               parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
+              parcelaCorrigida={proSolutoParcelaCorrigida(c.ps, input.psParcelas)}
               total={c.ps}
               via="boleto c/ correção"
             />
@@ -833,12 +835,14 @@ function PreviewEntradaRow({
   label,
   parcelas,
   parcela,
+  parcelaCorrigida,
   total,
   via,
 }: {
   label: string;
   parcelas: number;
   parcela: number;
+  parcelaCorrigida?: number;
   total: number;
   via: string;
 }) {
@@ -849,6 +853,11 @@ function PreviewEntradaRow({
         <div className="text-2xl font-bold leading-tight">
           {parcela > 0 ? formatBRL(parcela) : "—"}
         </div>
+        {parcelaCorrigida !== undefined && parcelaCorrigida > 0 && (
+          <div className="text-[10px] opacity-75">
+            corrigida ≈ {formatBRL(parcelaCorrigida)}
+          </div>
+        )}
         <div className="text-[9px] gold opacity-90">{parcelas}x {via}</div>
         <div className="text-[9px] opacity-60">total {formatBRL(total)}</div>
       </div>

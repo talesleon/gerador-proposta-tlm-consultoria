@@ -108,6 +108,24 @@ export function normalizeWhatsAppPhone(raw: string): string {
  * Usa *negrito*, emojis sutis, blocos separados por linha em branco
  * e indentação leve para facilitar leitura.
  */
+/**
+ * Parcela do pró-soluto com correção contratual aplicada:
+ * 0,5% a.m. até a parcela 36, 1,5% a.m. das parcelas 37 a 84.
+ * Retorna: (somatório das parcelas corrigidas) / n.
+ */
+export function proSolutoParcelaCorrigida(ps: number, n: number): number {
+  if (ps <= 0 || n <= 0) return 0;
+  const base = ps / n;
+  let factor = 1;
+  let totalCorrigido = 0;
+  for (let i = 1; i <= n; i++) {
+    const rate = i <= 36 ? 0.005 : 0.015;
+    factor *= 1 + rate;
+    totalCorrigido += base * factor;
+  }
+  return totalCorrigido / n;
+}
+
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
   const L: string[] = [];
   const sep = "━━━━━━━━━━━━";
@@ -156,8 +174,12 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`     ${input.saParcelas}x no cartão`);
   L.push(`     total ${formatBRL(c.sa)}`);
   L.push("");
+  const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
   L.push(`   • Pró-soluto — *${formatBRL(psParcela)}*`);
-  L.push(`     ${input.psParcelas}x no boleto c/ correção`);
+  L.push(`     ${input.psParcelas}x no boleto`);
+  if (psCorrigida > 0) {
+    L.push(`     corrigida ≈ ${formatBRL(psCorrigida)} (0,5% a.m. até 36ª · 1,5% a.m. da 37ª à 84ª)`);
+  }
   L.push(`     total ${formatBRL(c.ps)}`);
   L.push("");
   L.push(`*2.  SEGURO DE OBRA*  _(evolui junto com a obra)_`);
