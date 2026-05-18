@@ -344,26 +344,14 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   doc.setFillColor(GOLD);
   doc.rect(0, footerY, W, 0.7, "F");
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(5.8);
-  setColor("#5a5a5a");
-  const disc = wrap(
-    "Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias.",
-    CW,
-  );
-  let fy = footerY + 4;
-  disc.forEach((line) => {
-    txt(line, M, fy);
-    fy += 2.6;
-  });
-
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.2);
   setColor(GOLD);
   txt(
-    `TLM · ${input.builder.toUpperCase()} · ${todayBR()}`,
-    M,
-    footerY + footerH - 2.5,
+    `Tales Medeiros Consultor Imobiliário. Todos os Direitos Reservados. ${todayBR()}. Belo Horizonte, MG`,
+    W / 2,
+    footerY + footerH / 2 + 1,
+    { align: "center" },
   );
 
   return doc;
