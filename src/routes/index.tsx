@@ -16,6 +16,7 @@ import {
   MAX_PS_PARCELAS,
   normalizeWhatsAppPhone,
   parseBRLInput,
+  proSolutoParcelaCorrigida,
   seguroEvolucao,
   tempoObraMeses,
   todayBR,
