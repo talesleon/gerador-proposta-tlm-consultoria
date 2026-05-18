@@ -345,14 +345,18 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   doc.rect(0, footerY, W, 0.7, "F");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.2);
+  doc.setFontSize(5.6);
   setColor(GOLD);
-  txt(
+  const footerLines = wrap(
     `Tales Medeiros Consultor Imobiliário. Todos os Direitos Reservados. ${todayBR()}. Belo Horizonte, MG`,
-    W / 2,
-    footerY + footerH / 2 + 1,
-    { align: "center" },
+    CW,
   );
+  const totalH = footerLines.length * 2.6;
+  let fy = footerY + (footerH - totalH) / 2 + 2;
+  footerLines.forEach((line) => {
+    txt(line, W / 2, fy, { align: "center" });
+    fy += 2.6;
+  });
 
   return doc;
 }
