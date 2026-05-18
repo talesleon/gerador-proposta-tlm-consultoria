@@ -108,6 +108,24 @@ export function normalizeWhatsAppPhone(raw: string): string {
  * Usa *negrito*, emojis sutis, blocos separados por linha em branco
  * e indentação leve para facilitar leitura.
  */
+/**
+ * Parcela do pró-soluto com correção contratual aplicada:
+ * 0,5% a.m. até a parcela 36, 1,5% a.m. das parcelas 37 a 84.
+ * Retorna: (somatório das parcelas corrigidas) / n.
+ */
+export function proSolutoParcelaCorrigida(ps: number, n: number): number {
+  if (ps <= 0 || n <= 0) return 0;
+  const base = ps / n;
+  let factor = 1;
+  let totalCorrigido = 0;
+  for (let i = 1; i <= n; i++) {
+    const rate = i <= 36 ? 0.005 : 0.015;
+    factor *= 1 + rate;
+    totalCorrigido += base * factor;
+  }
+  return totalCorrigido / n;
+}
+
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
   const L: string[] = [];
   const sep = "━━━━━━━━━━━━";
