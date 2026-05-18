@@ -228,9 +228,9 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
 
     if (parcelaCorrigida !== undefined && parcelaCorrigida > 0) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
+      doc.setFontSize(6.2);
       setColor(GOLD_SOFT);
-      txt(`corrigida ≈ ${formatBRL(parcelaCorrigida)}`, W - M, y, { align: "right" });
+      txt(`corrigida ~ ${formatBRL(parcelaCorrigida)}`, W - M, y, { align: "right" });
       y += 3;
     }
 
