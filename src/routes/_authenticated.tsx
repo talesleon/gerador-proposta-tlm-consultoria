@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthGate,
@@ -34,6 +34,12 @@ function AuthGate() {
             Gerador de Propostas
           </Link>
           <div className="flex items-center gap-2">
+            <Link to="/admin">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Shield className="h-4 w-4" />
+                <span className="hidden sm:inline">Admin</span>
+              </Button>
+            </Link>
             <Link to="/minha-conta">
               <Button variant="ghost" size="sm" className="gap-2">
                 <UserIcon className="h-4 w-4" />
