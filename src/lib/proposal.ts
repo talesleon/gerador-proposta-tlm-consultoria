@@ -50,7 +50,8 @@ export interface ProposalComputed {
 }
 
 export function compute(input: ProposalInput): ProposalComputed {
-  const vf = input.va * 0.8;
+  const pct = FINANCIAMENTO_PCT[input.sistemaFinanciamento] ?? 0.8;
+  const vf = input.va * pct;
   const ve = Math.max(0, input.vv - vf);
   const saDefault = input.vv * 0.02;
   const sa = input.saOverride ?? saDefault;
