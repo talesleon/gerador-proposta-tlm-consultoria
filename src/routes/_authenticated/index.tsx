@@ -64,6 +64,7 @@ export const Route = createFileRoute("/_authenticated/")({
 
 const DEFAULT: ProposalInput = {
   builder: "Direcional",
+  sistemaFinanciamento: "PRICE",
   clienteNome: "",
   clienteTelefone: "",
   empreendimento: "",
