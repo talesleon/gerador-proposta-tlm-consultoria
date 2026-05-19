@@ -48,7 +48,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   component: Index,
   head: () => ({
     meta: [
@@ -181,7 +181,6 @@ function Index() {
   return (
     <div className="min-h-screen bg-background">
       <Toaster richColors position="top-center" />
-
       {/* App bar Material */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/90 backdrop-blur elev-1">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
@@ -216,7 +215,6 @@ function Index() {
           </Badge>
         </div>
       </header>
-
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
         {/* ─────────── FORMULÁRIO ─────────── */}
         <section className="space-y-5">
@@ -520,7 +518,7 @@ function Index() {
         </aside>
       </main>
     </div>
-  );
+  )
 }
 
 /* ─────────── Subcomponentes ─────────── */
