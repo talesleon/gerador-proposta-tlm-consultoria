@@ -22,7 +22,16 @@ import {
   todayBR,
   type Builder,
   type ProposalInput,
+  type SistemaFinanciamento,
+  FINANCIAMENTO_PCT,
 } from "@/lib/proposal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { generateProposalPDF } from "@/lib/pdf";
 import {
   cancelProposal,
@@ -64,6 +73,7 @@ export const Route = createFileRoute("/_authenticated/")({
 
 const DEFAULT: ProposalInput = {
   builder: "Direcional",
+  sistemaFinanciamento: "PRICE",
   clienteNome: "",
   clienteTelefone: "",
   empreendimento: "",
@@ -312,6 +322,25 @@ function Index() {
           {/* Valores */}
           <Card className="elev-1 p-5">
             <SectionHead icon={<Calculator className="h-4 w-4" />} title="Valores" />
+            <div className="mt-4">
+              <Field
+                label="Sistema de Financiamento"
+                helper={`V.F = ${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% do V.A`}
+              >
+                <Select
+                  value={input.sistemaFinanciamento}
+                  onValueChange={(v) => set("sistemaFinanciamento", v as SistemaFinanciamento)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SAC">SAC (90% V.A)</SelectItem>
+                    <SelectItem value="PRICE">PRICE (80% V.A)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <MoneyField
                 label="V.T — Valor Tabela"
@@ -333,7 +362,10 @@ function Index() {
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <Computed label="V.F · Financiável (80% V.A)" value={formatBRL(c.vf)} />
+              <Computed
+                label={`V.F · Financiável (${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% V.A)`}
+                value={formatBRL(c.vf)}
+              />
               <Computed label="V.E · Entrada (V.V − V.F)" value={formatBRL(c.ve)} />
             </div>
           </Card>

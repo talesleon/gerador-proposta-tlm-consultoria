@@ -7,8 +7,16 @@ export const MAX_PS_PARCELAS: Record<Builder, number> = {
   Direcional: 84,
 };
 
+export type SistemaFinanciamento = "SAC" | "PRICE";
+
+export const FINANCIAMENTO_PCT: Record<SistemaFinanciamento, number> = {
+  SAC: 0.9,
+  PRICE: 0.8,
+};
+
 export interface ProposalInput {
   builder: Builder;
+  sistemaFinanciamento: SistemaFinanciamento;
   clienteNome: string;
   clienteTelefone: string;
   empreendimento: string;
@@ -42,7 +50,8 @@ export interface ProposalComputed {
 }
 
 export function compute(input: ProposalInput): ProposalComputed {
-  const vf = input.va * 0.8;
+  const pct = FINANCIAMENTO_PCT[input.sistemaFinanciamento] ?? 0.8;
+  const vf = input.va * pct;
   const ve = Math.max(0, input.vv - vf);
   const saDefault = input.vv * 0.02;
   const sa = input.saOverride ?? saDefault;
