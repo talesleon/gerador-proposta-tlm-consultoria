@@ -7,8 +7,16 @@ export const MAX_PS_PARCELAS: Record<Builder, number> = {
   Direcional: 84,
 };
 
+export type SistemaFinanciamento = "SAC" | "PRICE";
+
+export const FINANCIAMENTO_PCT: Record<SistemaFinanciamento, number> = {
+  SAC: 0.9,
+  PRICE: 0.8,
+};
+
 export interface ProposalInput {
   builder: Builder;
+  sistemaFinanciamento: SistemaFinanciamento;
   clienteNome: string;
   clienteTelefone: string;
   empreendimento: string;
