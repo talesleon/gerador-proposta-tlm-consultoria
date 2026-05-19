@@ -22,7 +22,16 @@ import {
   todayBR,
   type Builder,
   type ProposalInput,
+  type SistemaFinanciamento,
+  FINANCIAMENTO_PCT,
 } from "@/lib/proposal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { generateProposalPDF } from "@/lib/pdf";
 import {
   cancelProposal,
