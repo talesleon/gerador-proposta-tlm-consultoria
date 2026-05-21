@@ -732,6 +732,13 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               total={c.sa}
               via="no cartão"
             />
+            {c.ec > 0 && (
+              <PreviewRow
+                label="Entrada Cliente"
+                value={formatBRL(c.ec)}
+                note="à vista"
+              />
+            )}
             <PreviewEntradaRow
               label="Pró-soluto"
               parcelas={input.psParcelas}
