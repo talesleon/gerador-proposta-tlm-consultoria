@@ -185,7 +185,8 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push("");
   if (c.ec > 0) {
     L.push(`   • Entrada Cliente — *${formatBRL(c.ec)}*`);
-    L.push(`     à vista`);
+    L.push(`     1x à vista`);
+    L.push(`     total ${formatBRL(c.ec)}`);
     L.push("");
   }
   const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
