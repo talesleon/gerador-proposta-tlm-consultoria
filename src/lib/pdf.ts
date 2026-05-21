@@ -249,7 +249,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
 
   entradaRow("Sinal ato", input.saParcelas, saParcela, c.sa, "no cartão");
   if (c.ec > 0) {
-    subRow("Entrada Cliente", formatBRL(c.ec), "à vista");
+    entradaRow("Entrada Cliente", 1, c.ec, c.ec, "à vista");
   }
   const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
   entradaRow("Pró-soluto", input.psParcelas, psParcela, c.ps, "boleto c/ correção", psCorrigida);

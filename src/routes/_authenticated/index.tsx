@@ -733,10 +733,12 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               via="no cartão"
             />
             {c.ec > 0 && (
-              <PreviewRow
+              <PreviewEntradaRow
                 label="Entrada Cliente"
-                value={formatBRL(c.ec)}
-                note="à vista"
+                parcelas={1}
+                parcela={c.ec}
+                total={c.ec}
+                via="à vista"
               />
             )}
             <PreviewEntradaRow
