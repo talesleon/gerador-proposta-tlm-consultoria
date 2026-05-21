@@ -183,6 +183,11 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`     ${input.saParcelas}x no cartão`);
   L.push(`     total ${formatBRL(c.sa)}`);
   L.push("");
+  if (c.ec > 0) {
+    L.push(`   • Entrada Cliente — *${formatBRL(c.ec)}*`);
+    L.push(`     à vista`);
+    L.push("");
+  }
   const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
   L.push(`   • Pró-soluto — *${formatBRL(psParcela)}*`);
   L.push(`     ${input.psParcelas}x no boleto`);
