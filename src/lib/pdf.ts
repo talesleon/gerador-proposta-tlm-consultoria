@@ -340,6 +340,17 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     y += 3.6;
   });
 
+  if (c.vf > 0 && input.posObraPrazoMeses > 0) {
+    const posParc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
+    entradaRow(
+      "Parcela estimada",
+      input.posObraPrazoMeses,
+      posParc,
+      c.vf,
+      `PRICE ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`,
+    );
+  }
+
   // Rodapé creme — fixo no fim, com altura segura
   const footerH = 22;
   const footerY = H - footerH;
