@@ -243,6 +243,13 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push("");
   L.push(`   • Financiamento direto com o banco`);
   L.push(`   • A partir de *${input.posObraInicio || "(definir)"}*`);
+  if (c.vf > 0 && input.posObraPrazoMeses > 0) {
+    const parc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
+    L.push("");
+    L.push(`   • Parcela estimada — *${formatBRL(parc)}*`);
+    L.push(`     ${input.posObraPrazoMeses}x · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. (PRICE)`);
+    L.push(`     V.F financiado ${formatBRL(c.vf)}`);
+  }
   L.push("");
   L.push(sep);
   L.push("");
