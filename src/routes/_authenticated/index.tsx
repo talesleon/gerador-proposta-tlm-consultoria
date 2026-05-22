@@ -524,6 +524,40 @@ function Index() {
                   placeholder="março de 2029"
                 />
               </Field>
+              <Field
+                label="Prazo do financiamento (meses)"
+                helper={`${Math.round(input.posObraPrazoMeses / 12)} anos`}
+              >
+                <Input
+                  inputMode="numeric"
+                  value={String(input.posObraPrazoMeses)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    const n = digits === "" ? 1 : Math.max(1, Math.min(420, Number(digits)));
+                    set("posObraPrazoMeses", n);
+                  }}
+                  placeholder="360"
+                />
+              </Field>
+              <Field
+                label="Juros (% ao ano)"
+                helper={
+                  c.vf > 0 && input.posObraPrazoMeses > 0
+                    ? `Parcela PRICE ≈ ${formatBRL(parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA))}`
+                    : "Ex.: 10,5"
+                }
+              >
+                <Input
+                  inputMode="decimal"
+                  value={String(input.posObraJurosAA).replace(".", ",")}
+                  onChange={(e) => {
+                    const cleaned = e.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
+                    const n = Number(cleaned);
+                    set("posObraJurosAA", Number.isFinite(n) ? n : 0);
+                  }}
+                  placeholder="10,5"
+                />
+              </Field>
             </div>
           </Card>
         </section>
