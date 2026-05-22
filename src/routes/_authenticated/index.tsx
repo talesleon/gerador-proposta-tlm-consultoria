@@ -791,15 +791,13 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               total={c.sa}
               via="no cartão"
             />
-            {c.ec > 0 && (
-              <PreviewEntradaRow
-                label="Entrada Cliente"
-                parcelas={Math.max(1, input.ecParcelas || 1)}
-                parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
-                total={c.ec}
-                via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
-              />
-            )}
+            <PreviewEntradaRow
+              label="Entrada Cliente"
+              parcelas={Math.max(1, input.ecParcelas || 1)}
+              parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
+              total={c.ec}
+              via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
+            />
             <PreviewEntradaRow
               label="Pró-soluto"
               parcelas={input.psParcelas}
@@ -864,15 +862,17 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               Financiamento direto com o banco, a partir de{" "}
               {input.posObraInicio || "(definir)"}.
             </p>
-            {c.vf > 0 && input.posObraPrazoMeses > 0 && (
-              <PreviewEntradaRow
-                label="Parcela estimada"
-                parcelas={input.posObraPrazoMeses}
-                parcela={parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)}
-                total={c.vf}
-                via={`PRICE · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
-              />
-            )}
+            <PreviewEntradaRow
+              label="Valor da parcela"
+              parcelas={input.posObraPrazoMeses || 0}
+              parcela={
+                c.vf > 0 && input.posObraPrazoMeses > 0
+                  ? parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)
+                  : 0
+              }
+              total={c.vf}
+              via={`PRICE · ${(input.posObraJurosAA || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
+            />
           </PreviewPhase>
         </div>
 
