@@ -85,12 +85,15 @@ const DEFAULT: ProposalInput = {
   va: 0,
   saOverride: null,
   ec: 0,
+  ecParcelas: 1,
   saParcelas: 12,
   psParcelas: 84,
   seguroInicial: 0,
   seguroFinal: 0,
   seguroMarcos: 0,
   posObraInicio: "",
+  posObraPrazoMeses: 360,
+  posObraJurosAA: 10.5,
 };
 
 function Index() {
