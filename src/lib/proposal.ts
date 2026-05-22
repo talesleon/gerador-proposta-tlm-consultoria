@@ -198,8 +198,10 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`     total ${formatBRL(c.sa)}`);
   L.push("");
   if (c.ec > 0) {
-    L.push(`   • Entrada Cliente — *${formatBRL(c.ec)}*`);
-    L.push(`     1x à vista`);
+    const ecN = Math.max(1, input.ecParcelas || 1);
+    const ecParcela = c.ec / ecN;
+    L.push(`   • Entrada Cliente — *${formatBRL(ecParcela)}*`);
+    L.push(`     ${ecN}x ${ecN === 1 ? "à vista" : "no boleto"}`);
     L.push(`     total ${formatBRL(c.ec)}`);
     L.push("");
   }
