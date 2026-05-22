@@ -155,13 +155,9 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
 
   // Cabeçalho
   const header: string[] = [];
-  header.push(`🏢 *${input.empreendimento || "Empreendimento"}*`);
-  header.push("");
   const unidadeTipologia = [input.unidade, input.tipologia].filter(Boolean).join(" | ");
-  if (unidadeTipologia) {
-    header.push(unidadeTipologia);
-    header.push("");
-  }
+  header.push(`🏢 *${input.empreendimento || "Empreendimento"}* | ${unidadeTipologia}`);
+  header.push("");
   if (input.entrega) header.push(`Entrega: *${input.entrega}*`);
   sections.push(header);
 
