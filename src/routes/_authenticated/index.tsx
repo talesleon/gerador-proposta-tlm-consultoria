@@ -860,10 +860,19 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
             })()}
           </PreviewPhase>
           <PreviewPhase num="3" title="Pós-obra">
-            <p className="text-[11px] opacity-80 leading-relaxed px-1">
+            <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
               Financiamento direto com o banco, a partir de{" "}
               {input.posObraInicio || "(definir)"}.
             </p>
+            {c.vf > 0 && input.posObraPrazoMeses > 0 && (
+              <PreviewEntradaRow
+                label="Parcela estimada"
+                parcelas={input.posObraPrazoMeses}
+                parcela={parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)}
+                total={c.vf}
+                via={`PRICE · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
+              />
+            )}
           </PreviewPhase>
         </div>
 
