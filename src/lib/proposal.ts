@@ -196,8 +196,12 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`🏗️ *SEGURO DE OBRA*`);
   const meses = tempoObraMeses(input.entrega);
   if (input.seguroFinal > 0 && meses > 0) {
-    L.push(`Pago à construtora durante a obra. Começa em ±${formatBRLCompact(input.seguroInicial)} e vai até ±${formatBRLCompact(input.seguroFinal)} perto da entrega.`);
-    L.push(`Média: ±${formatBRLCompact(input.seguroFinal / meses)}/mês (${meses} meses).`);
+    const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, meses, input.seguroMarcos);
+    L.push(`Pago à Caixa durante a obra. Começa em ±${formatBRLCompact(input.seguroInicial)} e vai até ±${formatBRLCompact(input.seguroFinal)} perto da entrega.`);
+    if (evo.length > 0) {
+      const media = evo.reduce((s, p) => s + p.valor, 0) / evo.length;
+      L.push(`Média: ±${formatBRLCompact(media)}/mês (${meses} meses).`);
+    }
   } else {
     L.push(`Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
     L.push(`Final: ±${formatBRLCompact(input.seguroFinal)}`);
