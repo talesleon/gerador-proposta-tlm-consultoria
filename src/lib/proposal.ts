@@ -28,12 +28,15 @@ export interface ProposalInput {
   va: number;
   saOverride: number | null;
   ec: number;
+  ecParcelas: number;
   saParcelas: number;
   psParcelas: number;
   seguroInicial: number;
   seguroFinal: number;
   seguroMarcos: number; // qtd de marcos trimestrais no gráfico (0 = auto)
   posObraInicio: string;
+  posObraPrazoMeses: number;
+  posObraJurosAA: number; // juros nominais ao ano (%)
 }
 
 export interface ProposalComputed {
