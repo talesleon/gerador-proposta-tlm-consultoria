@@ -425,17 +425,38 @@ function Index() {
                 </Field>
               </div>
 
-              <Field
-                label="E.C — Entrada Cliente"
-                helper={
-                  !c.ecValid
-                    ? "S.A + E.C maior que V.E"
-                    : "Aceita 0. Será diminuído do P.S."
-                }
-                warn={!c.ecValid}
-              >
-                <MoneyInput value={input.ec} onChange={(n) => set("ec", n)} />
-              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="E.C — Entrada Cliente"
+                  helper={
+                    !c.ecValid
+                      ? "S.A + E.C maior que V.E"
+                      : "Aceita 0. Será diminuído do P.S."
+                  }
+                  warn={!c.ecValid}
+                >
+                  <MoneyInput value={input.ec} onChange={(n) => set("ec", n)} />
+                </Field>
+
+                <Field
+                  label="Parcelas da Entrada Cliente"
+                  helper={
+                    input.ecParcelas > 0 && c.ec > 0
+                      ? `≈ ${formatBRL(c.ec / input.ecParcelas)} / mês`
+                      : "1 = à vista"
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.ecParcelas)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 1 : Math.max(1, Number(digits));
+                      set("ecParcelas", n);
+                    }}
+                  />
+                </Field>
+              </div>
 
               <Computed label="P.S · Pró-soluto (V.E − S.A − E.C)" value={formatBRL(c.ps)} highlight />
 
