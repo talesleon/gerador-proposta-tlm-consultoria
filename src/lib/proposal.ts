@@ -138,6 +138,17 @@ export function proSolutoParcelaCorrigida(ps: number, n: number): number {
   return totalCorrigido / n;
 }
 
+/**
+ * Parcela mensal pelo sistema PRICE.
+ * vf: valor financiado · n: prazo em meses · jurosAA: juros nominais % ao ano.
+ */
+export function parcelaPricePosObra(vf: number, n: number, jurosAA: number): number {
+  if (vf <= 0 || n <= 0) return 0;
+  const i = Math.pow(1 + jurosAA / 100, 1 / 12) - 1;
+  if (i <= 0) return vf / n;
+  return (vf * i) / (1 - Math.pow(1 + i, -n));
+}
+
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
   const L: string[] = [];
   const sep = "━━━━━━━━━━━━";
