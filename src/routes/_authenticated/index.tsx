@@ -173,7 +173,7 @@ function Index() {
   }
 
   function handleEditProposal(p: SavedProposal) {
-    setInput(p.input);
+    setInput({ ...DEFAULT, ...p.input });
     setEditingId(p.id);
     setEditingSku(p.sku);
     toast.info(`Editando ${p.sku}`);
