@@ -17,6 +17,7 @@ import {
   normalizeWhatsAppPhone,
   parseBRLInput,
   proSolutoParcelaCorrigida,
+  parcelaPricePosObra,
   seguroEvolucao,
   tempoObraMeses,
   todayBR,
@@ -85,12 +86,15 @@ const DEFAULT: ProposalInput = {
   va: 0,
   saOverride: null,
   ec: 0,
+  ecParcelas: 1,
   saParcelas: 12,
   psParcelas: 84,
   seguroInicial: 0,
   seguroFinal: 0,
   seguroMarcos: 0,
   posObraInicio: "",
+  posObraPrazoMeses: 360,
+  posObraJurosAA: 10.5,
 };
 
 function Index() {
@@ -421,17 +425,38 @@ function Index() {
                 </Field>
               </div>
 
-              <Field
-                label="E.C — Entrada Cliente"
-                helper={
-                  !c.ecValid
-                    ? "S.A + E.C maior que V.E"
-                    : "Aceita 0. Será diminuído do P.S."
-                }
-                warn={!c.ecValid}
-              >
-                <MoneyInput value={input.ec} onChange={(n) => set("ec", n)} />
-              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="E.C — Entrada Cliente"
+                  helper={
+                    !c.ecValid
+                      ? "S.A + E.C maior que V.E"
+                      : "Aceita 0. Será diminuído do P.S."
+                  }
+                  warn={!c.ecValid}
+                >
+                  <MoneyInput value={input.ec} onChange={(n) => set("ec", n)} />
+                </Field>
+
+                <Field
+                  label="Parcelas da Entrada Cliente"
+                  helper={
+                    input.ecParcelas > 0 && c.ec > 0
+                      ? `≈ ${formatBRL(c.ec / input.ecParcelas)} / mês`
+                      : "1 = à vista"
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.ecParcelas)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 1 : Math.max(1, Number(digits));
+                      set("ecParcelas", n);
+                    }}
+                  />
+                </Field>
+              </div>
 
               <Computed label="P.S · Pró-soluto (V.E − S.A − E.C)" value={formatBRL(c.ps)} highlight />
 
@@ -497,6 +522,40 @@ function Index() {
                   value={input.posObraInicio}
                   onChange={(e) => set("posObraInicio", e.target.value)}
                   placeholder="março de 2029"
+                />
+              </Field>
+              <Field
+                label="Prazo do financiamento (meses)"
+                helper={`${Math.round(input.posObraPrazoMeses / 12)} anos`}
+              >
+                <Input
+                  inputMode="numeric"
+                  value={String(input.posObraPrazoMeses)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    const n = digits === "" ? 1 : Math.max(1, Math.min(420, Number(digits)));
+                    set("posObraPrazoMeses", n);
+                  }}
+                  placeholder="360"
+                />
+              </Field>
+              <Field
+                label="Juros (% ao ano)"
+                helper={
+                  c.vf > 0 && input.posObraPrazoMeses > 0
+                    ? `Parcela PRICE ≈ ${formatBRL(parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA))}`
+                    : "Ex.: 10,5"
+                }
+              >
+                <Input
+                  inputMode="decimal"
+                  value={String(input.posObraJurosAA).replace(".", ",")}
+                  onChange={(e) => {
+                    const cleaned = e.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
+                    const n = Number(cleaned);
+                    set("posObraJurosAA", Number.isFinite(n) ? n : 0);
+                  }}
+                  placeholder="10,5"
                 />
               </Field>
             </div>
@@ -735,10 +794,10 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
             {c.ec > 0 && (
               <PreviewEntradaRow
                 label="Entrada Cliente"
-                parcelas={1}
-                parcela={c.ec}
+                parcelas={Math.max(1, input.ecParcelas || 1)}
+                parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
                 total={c.ec}
-                via="à vista"
+                via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
               />
             )}
             <PreviewEntradaRow
@@ -801,10 +860,19 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
             })()}
           </PreviewPhase>
           <PreviewPhase num="3" title="Pós-obra">
-            <p className="text-[11px] opacity-80 leading-relaxed px-1">
+            <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
               Financiamento direto com o banco, a partir de{" "}
               {input.posObraInicio || "(definir)"}.
             </p>
+            {c.vf > 0 && input.posObraPrazoMeses > 0 && (
+              <PreviewEntradaRow
+                label="Parcela estimada"
+                parcelas={input.posObraPrazoMeses}
+                parcela={parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)}
+                total={c.vf}
+                via={`PRICE · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
+              />
+            )}
           </PreviewPhase>
         </div>
 

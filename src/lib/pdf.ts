@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import {
   formatBRL,
   formatBRLCompact,
+  parcelaPricePosObra,
   proSolutoParcelaCorrigida,
   seguroEvolucao,
   tempoObraMeses,
@@ -249,7 +250,8 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
 
   entradaRow("Sinal ato", input.saParcelas, saParcela, c.sa, "no cartão");
   if (c.ec > 0) {
-    entradaRow("Entrada Cliente", 1, c.ec, c.ec, "à vista");
+    const ecN = Math.max(1, input.ecParcelas || 1);
+    entradaRow("Entrada Cliente", ecN, c.ec / ecN, c.ec, ecN === 1 ? "à vista" : "no boleto");
   }
   const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
   entradaRow("Pró-soluto", input.psParcelas, psParcela, c.ps, "boleto c/ correção", psCorrigida);
@@ -337,6 +339,17 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     txt(line, M + 2, y);
     y += 3.6;
   });
+
+  if (c.vf > 0 && input.posObraPrazoMeses > 0) {
+    const posParc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
+    entradaRow(
+      "Parcela estimada",
+      input.posObraPrazoMeses,
+      posParc,
+      c.vf,
+      `PRICE ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`,
+    );
+  }
 
   // Rodapé creme — fixo no fim, com altura segura
   const footerH = 22;

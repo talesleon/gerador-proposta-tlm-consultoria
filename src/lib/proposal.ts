@@ -28,12 +28,15 @@ export interface ProposalInput {
   va: number;
   saOverride: number | null;
   ec: number;
+  ecParcelas: number;
   saParcelas: number;
   psParcelas: number;
   seguroInicial: number;
   seguroFinal: number;
   seguroMarcos: number; // qtd de marcos trimestrais no gráfico (0 = auto)
   posObraInicio: string;
+  posObraPrazoMeses: number;
+  posObraJurosAA: number; // juros nominais ao ano (%)
 }
 
 export interface ProposalComputed {
@@ -135,6 +138,17 @@ export function proSolutoParcelaCorrigida(ps: number, n: number): number {
   return totalCorrigido / n;
 }
 
+/**
+ * Parcela mensal pelo sistema PRICE.
+ * vf: valor financiado · n: prazo em meses · jurosAA: juros nominais % ao ano.
+ */
+export function parcelaPricePosObra(vf: number, n: number, jurosAA: number): number {
+  if (vf <= 0 || n <= 0) return 0;
+  const i = Math.pow(1 + jurosAA / 100, 1 / 12) - 1;
+  if (i <= 0) return vf / n;
+  return (vf * i) / (1 - Math.pow(1 + i, -n));
+}
+
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
   const L: string[] = [];
   const sep = "━━━━━━━━━━━━";
@@ -184,8 +198,10 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push(`     total ${formatBRL(c.sa)}`);
   L.push("");
   if (c.ec > 0) {
-    L.push(`   • Entrada Cliente — *${formatBRL(c.ec)}*`);
-    L.push(`     1x à vista`);
+    const ecN = Math.max(1, input.ecParcelas || 1);
+    const ecParcela = c.ec / ecN;
+    L.push(`   • Entrada Cliente — *${formatBRL(ecParcela)}*`);
+    L.push(`     ${ecN}x ${ecN === 1 ? "à vista" : "no boleto"}`);
     L.push(`     total ${formatBRL(c.ec)}`);
     L.push("");
   }
@@ -227,6 +243,13 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   L.push("");
   L.push(`   • Financiamento direto com o banco`);
   L.push(`   • A partir de *${input.posObraInicio || "(definir)"}*`);
+  if (c.vf > 0 && input.posObraPrazoMeses > 0) {
+    const parc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
+    L.push("");
+    L.push(`   • Parcela estimada — *${formatBRL(parc)}*`);
+    L.push(`     ${input.posObraPrazoMeses}x · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. (PRICE)`);
+    L.push(`     V.F financiado ${formatBRL(c.vf)}`);
+  }
   L.push("");
   L.push(sep);
   L.push("");
