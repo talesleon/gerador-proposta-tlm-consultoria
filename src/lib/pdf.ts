@@ -26,7 +26,7 @@ const MUTED = "#8a8f99";
  */
 export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): jsPDF {
   const W = 90;
-  const H = 230;
+  const H = 195;
   const M = 8; // margem segura lateral
   const CW = W - M * 2; // largura útil
   const doc = new jsPDF({ unit: "mm", format: [W, H], orientation: "portrait" });
