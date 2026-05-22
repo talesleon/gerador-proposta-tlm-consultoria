@@ -150,86 +150,103 @@ export function parcelaPricePosObra(vf: number, n: number, jurosAA: number): num
 }
 
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
-  const L: string[] = [];
+  const sections: string[][] = [];
   const sep = "━━━━━━━━━━━━";
 
-  // Helper: adiciona linha seguida de linha em branco
-  const add = (s: string) => {
-    L.push(s);
-    L.push("");
-  };
-  const addSep = () => {
-    L.push(sep);
-    L.push("");
-  };
-
   // Cabeçalho
-  add(`🏢 *${input.empreendimento || "Empreendimento"}*`);
+  const header: string[] = [];
+  header.push(`🏢 *${input.empreendimento || "Empreendimento"}*`);
+  header.push("");
   const unidadeTipologia = [input.unidade, input.tipologia].filter(Boolean).join(" | ");
-  if (unidadeTipologia) add(unidadeTipologia);
-  if (input.entrega) add(`Entrega: *${input.entrega}*`);
-  addSep();
+  if (unidadeTipologia) {
+    header.push(unidadeTipologia);
+    header.push("");
+  }
+  if (input.entrega) header.push(`Entrega: *${input.entrega}*`);
+  sections.push(header);
 
   // Valores
-  add(`💰 *VALORES*`);
-  add(`Tabela: ${formatBRL(input.vt)}`);
-  add(`Negociado: *${formatBRL(input.vv)}*`);
+  const valores: string[] = [];
+  valores.push(`💰 *VALORES*`);
+  valores.push("");
+  valores.push(`Tabela: ${formatBRL(input.vt)}`);
+  valores.push(`Negociado: *${formatBRL(input.vv)}*`);
   const desconto = input.vt - input.vv;
-  if (desconto > 0) add(`Você economiza: ${formatBRL(desconto)}`);
-  addSep();
+  if (desconto > 0) valores.push(`Você economiza: ${formatBRL(desconto)}`);
+  sections.push(valores);
 
   // Entrada
-  add(`💳 *ENTRADA*`);
+  const entrada: string[] = [];
+  entrada.push(`💳 *ENTRADA*`);
+  entrada.push("");
+  const entradaItems: string[][] = [];
   const saParcela = input.saParcelas > 0 ? c.sa / input.saParcelas : 0;
   const saVia = input.saParcelas > 1 ? `${input.saParcelas}x no cartão` : "à vista";
-  add(`Sinal ato: *${formatBRL(saParcela)}* — ${saVia}`);
-  add(`_(Total ${formatBRL(c.sa)})_`);
+  entradaItems.push([
+    `Sinal ato: *${formatBRL(saParcela)}* — ${saVia}`,
+    `_(Total ${formatBRL(c.sa)})_`,
+  ]);
   if (c.ec > 0) {
     const ecN = Math.max(1, input.ecParcelas || 1);
     const ecParcela = c.ec / ecN;
     const ecVia = ecN === 1 ? "à vista" : `${ecN}x no boleto`;
-    add(`Entrada cliente: *${formatBRL(ecParcela)}* — ${ecVia}`);
-    add(`_(Total ${formatBRL(c.ec)})_`);
+    entradaItems.push([
+      `Entrada cliente: *${formatBRL(ecParcela)}* — ${ecVia}`,
+      `_(Total ${formatBRL(c.ec)})_`,
+    ]);
   }
   const psCorrigida = proSolutoParcelaCorrigida(c.ps, input.psParcelas);
   if (psCorrigida > 0) {
-    add(`Pró-soluto com correção: ≈ ${formatBRL(psCorrigida)}/mês`);
-    add(`_(0,5% a.m. até a 36ª e 1,5% a.m. da 37ª à 84ª)._`);
+    entradaItems.push([
+      `Pró-soluto com correção: ≈ ${formatBRL(psCorrigida)}/mês (${input.psParcelas}x)`,
+      `_(0,5% a.m. até a 36ª e 1,5% a.m. da 37ª à 84ª)._`,
+    ]);
   }
-  addSep();
+  entradaItems.forEach((item, idx) => {
+    if (idx > 0) entrada.push("");
+    entrada.push(...item);
+  });
+  sections.push(entrada);
 
   // Seguro
-  add(`🏗️ *SEGURO DE OBRA*`);
+  const seguro: string[] = [];
+  seguro.push(`🏗️ *SEGURO DE OBRA*`);
+  seguro.push("");
   const meses = tempoObraMeses(input.entrega);
   if (input.seguroFinal > 0 && meses > 0) {
     const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, meses, input.seguroMarcos);
-    add(`Pago à Caixa durante a obra. Começa em ±${formatBRLCompact(input.seguroInicial)} e vai até ±${formatBRLCompact(input.seguroFinal)} perto da entrega.`);
+    seguro.push(`Pago à Caixa durante a obra. Começa em ±${formatBRLCompact(input.seguroInicial)} e vai até ±${formatBRLCompact(input.seguroFinal)} perto da entrega.`);
     if (evo.length > 0) {
       const media = evo.reduce((s, p) => s + p.valor, 0) / evo.length;
-      add(`Média: ±${formatBRLCompact(media)}/mês (${meses} meses).`);
+      seguro.push(`Média: ±${formatBRLCompact(media)}/mês (${meses} meses).`);
     }
   } else {
-    add(`Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
-    add(`Final: ±${formatBRLCompact(input.seguroFinal)}`);
+    seguro.push(`Inicial: ±${formatBRLCompact(input.seguroInicial)}`);
+    seguro.push(`Final: ±${formatBRLCompact(input.seguroFinal)}`);
   }
-  addSep();
+  sections.push(seguro);
 
   // Pós-obra
-  add(`🔑 *PÓS-OBRA*`);
-  add(`Financiamento direto com o banco, a partir de *${input.posObraInicio || "(definir)"}*.`);
+  const pos: string[] = [];
+  pos.push(`🔑 *PÓS-OBRA*`);
+  pos.push("");
+  pos.push(`Financiamento direto com o banco, a partir de *${input.posObraInicio || "(definir)"}*.`);
   if (c.vf > 0 && input.posObraPrazoMeses > 0) {
     const parc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
     const anos = Math.round(input.posObraPrazoMeses / 12);
-    add(`Parcela estimada: *${formatBRL(parc)}*`);
-    add(`_${input.posObraPrazoMeses}x (${anos} anos) · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. (PRICE)_`);
-    add(`_Valor financiado: ${formatBRL(c.vf)}_`);
+    pos.push("");
+    pos.push(`Parcela estimada: *${formatBRL(parc)}*`);
+    pos.push(`_${input.posObraPrazoMeses}x (${anos} anos) · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. (PRICE)_`);
+    pos.push(`_Valor financiado: ${formatBRL(c.vf)}_`);
   }
-  addSep();
-  L.push(
-    `_Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias._ Tales Medeiros · Consultoria Imobiliária · ${todayBR()}.`,
-  );
+  sections.push(pos);
 
-  return L.join("\n");
+  // Disclaimer
+  sections.push([
+    `_Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias._ Tales Medeiros · Consultoria Imobiliária · ${todayBR()}.`,
+  ]);
+
+  return sections.map((s) => s.join("\n")).join(`\n\n${sep}\n\n`);
 }
 
 export function todayBR(): string {
