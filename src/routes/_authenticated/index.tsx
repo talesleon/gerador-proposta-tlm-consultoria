@@ -17,6 +17,7 @@ import {
   normalizeWhatsAppPhone,
   parseBRLInput,
   proSolutoParcelaCorrigida,
+  parcelaPricePosObra,
   seguroEvolucao,
   tempoObraMeses,
   todayBR,
