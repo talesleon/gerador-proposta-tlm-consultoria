@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import {
   formatBRL,
   formatBRLCompact,
+  parcelaPricePosObra,
   proSolutoParcelaCorrigida,
   seguroEvolucao,
   tempoObraMeses,
