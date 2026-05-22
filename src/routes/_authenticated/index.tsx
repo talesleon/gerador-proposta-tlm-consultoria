@@ -791,15 +791,13 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
               total={c.sa}
               via="no cartão"
             />
-            {c.ec > 0 && (
-              <PreviewEntradaRow
-                label="Entrada Cliente"
-                parcelas={Math.max(1, input.ecParcelas || 1)}
-                parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
-                total={c.ec}
-                via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
-              />
-            )}
+            <PreviewEntradaRow
+              label="Entrada Cliente"
+              parcelas={Math.max(1, input.ecParcelas || 1)}
+              parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
+              total={c.ec}
+              via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
+            />
             <PreviewEntradaRow
               label="Pró-soluto"
               parcelas={input.psParcelas}
