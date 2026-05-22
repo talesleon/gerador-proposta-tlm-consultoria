@@ -794,10 +794,10 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
             {c.ec > 0 && (
               <PreviewEntradaRow
                 label="Entrada Cliente"
-                parcelas={1}
-                parcela={c.ec}
+                parcelas={Math.max(1, input.ecParcelas || 1)}
+                parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
                 total={c.ec}
-                via="à vista"
+                via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
               />
             )}
             <PreviewEntradaRow
