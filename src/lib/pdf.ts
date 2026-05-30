@@ -342,13 +342,34 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
 
   if (c.vf > 0 && input.posObraPrazoMeses > 0) {
     const posParc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
-    entradaRow(
-      "Parcela estimada",
-      input.posObraPrazoMeses,
-      posParc,
-      c.vf,
-      `PRICE ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`,
+    const anos = Math.round(input.posObraPrazoMeses / 12);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    setColor(TEXT_SOFT);
+    txt("Parcela estimada", M + 2, y);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    setColor(WHITE);
+    txt(formatBRL(posParc), W - M, y, { align: "right" });
+    y += 4;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.2);
+    setColor(GOLD_SOFT);
+    txt(
+      `${input.posObraPrazoMeses}x (${anos} anos) · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. PRICE`,
+      W - M,
+      y,
+      { align: "right" },
     );
+    y += 3.2;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5.8);
+    setColor(MUTED);
+    txt(`Valor financiado ${formatBRL(c.vf)}`, W - M, y, { align: "right" });
+    y += 4;
   }
 
   // Rodapé creme — fixo no fim, com altura segura
