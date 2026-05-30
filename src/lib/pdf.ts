@@ -339,7 +339,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     txt(line, M + 2, y);
     y += 3.6;
   });
-  y += 1.5;
+  y += 5;
 
   if (c.vf > 0 && input.posObraPrazoMeses > 0) {
     const posParc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
