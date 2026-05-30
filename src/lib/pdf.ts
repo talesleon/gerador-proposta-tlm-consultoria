@@ -324,7 +324,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     subRow("Inicial", formatBRLCompact(input.seguroInicial));
     subRow("Final (~)", formatBRLCompact(input.seguroFinal));
   }
-  y += 1;
+  y += 3;
 
   // Fase 3 — Pós-obra
   phaseTitle("3", "Pós-obra");
@@ -339,20 +339,22 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     txt(line, M + 2, y);
     y += 3.6;
   });
+  y += 1.5;
 
   if (c.vf > 0 && input.posObraPrazoMeses > 0) {
     const posParc = parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA);
     const anos = Math.round(input.posObraPrazoMeses / 12);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     setColor(TEXT_SOFT);
     txt("Parcela estimada", M + 2, y);
+    y += 4.5;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(13);
     setColor(WHITE);
     txt(formatBRL(posParc), W - M, y, { align: "right" });
-    y += 4;
+    y += 3.5;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.2);
