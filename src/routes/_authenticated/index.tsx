@@ -898,97 +898,141 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
         </div>
 
         <div className="bg-white/[0.03] border-t border-white/10">
-          <PreviewPhase num="1" title="Entrada">
-            <PreviewEntradaRow
-              label="Sinal ato"
-              parcelas={input.saParcelas}
-              parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
-              total={c.sa}
-              via="no cartão"
-            />
-            <PreviewEntradaRow
-              label="Entrada Cliente"
-              parcelas={Math.max(1, input.ecParcelas || 1)}
-              parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
-              total={c.ec}
-              via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
-            />
-            <PreviewEntradaRow
-              label="Pró-soluto"
-              parcelas={input.psParcelas}
-              parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
-              parcelaCorrigida={proSolutoParcelaCorrigida(c.ps, input.psParcelas)}
-              total={c.ps}
-              via="boleto c/ correção"
-            />
-          </PreviewPhase>
-          <PreviewPhase num="2" title="Seguro de Obra">
-            {(() => {
-              const m = tempoObraMeses(input.entrega);
-              const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, m, input.seguroMarcos);
-              if (evo.length < 2) {
-                return (
-                  <>
-                    <PreviewRow label="Inicial" value={formatBRLCompact(input.seguroInicial)} />
-                    <PreviewRow label="Final (≈)" value={formatBRLCompact(input.seguroFinal)} />
-                  </>
-                );
-              }
-              const max = evo[evo.length - 1].valor;
-              return (
-                <div className="px-1">
-                  <p className="text-[10px] opacity-80 mb-1.5">
-                    Evolui junto com a obra · começa pequeno e cresce até a entrega
-                  </p>
-                  <div className="flex items-end gap-[3px] h-14 border-b border-white/15 pb-0.5">
-                    {evo.map((p, i) => {
-                      const h = Math.max(6, (p.valor / max) * 100);
-                      return (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-sm"
-                          style={{
-                            height: `${h}%`,
-                            background:
-                              i === evo.length - 1
-                                ? "var(--gold)"
-                                : "color-mix(in oklab, var(--gold) 60%, transparent)",
-                          }}
-                          title={`Mês ${p.mes}: ${formatBRLCompact(p.valor)}`}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-between text-[9px] opacity-70 mt-1">
-                    <span>±{formatBRLCompact(input.seguroInicial)} · hoje</span>
-                    <span>±{formatBRLCompact(input.seguroFinal)} · entrega</span>
-                  </div>
-                  {input.seguroFinal > 0 && evo.length > 0 && (
-                    <p className="text-[9px] opacity-70 text-center mt-0.5">
-                      média ±{formatBRLCompact(evo.reduce((s, p) => s + p.valor, 0) / evo.length)}/mês · {m} meses
-                    </p>
-                  )}
-                </div>
-              );
-            })()}
-          </PreviewPhase>
-          <PreviewPhase num="3" title="Pós-obra">
-            <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
-              Financiamento direto com o banco, a partir de{" "}
-              {input.posObraInicio || "(definir)"}.
-            </p>
-            <PreviewEntradaRow
-              label="Valor da parcela"
-              parcelas={input.posObraPrazoMeses || 0}
-              parcela={
-                c.vf > 0 && input.posObraPrazoMeses > 0
-                  ? parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)
-                  : 0
-              }
-              total={c.vf}
-              via={`PRICE · ${(input.posObraJurosAA || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
-            />
-          </PreviewPhase>
+          {isTD ? (
+            <>
+              <PreviewPhase num="1" title="Entrada (10% VT)">
+                <PreviewRow
+                  label="Sinal no ato"
+                  value={formatBRL(td.entrada)}
+                />
+              </PreviewPhase>
+              <PreviewPhase num="2" title="Obra (40% VT)">
+                <PreviewEntradaRow
+                  label="Parcela mensal"
+                  parcelas={td.mesesObra}
+                  parcela={td.obraMensalParcela}
+                  total={td.obraMensalTotal}
+                  via="direto com a construtora"
+                />
+                {td.intermediariasQtd > 0 && (
+                  <PreviewEntradaRow
+                    label="Intermediárias"
+                    parcelas={td.intermediariasQtd}
+                    parcela={td.intermediariaValor}
+                    total={td.intermediariasTotal}
+                    via="anuais · 5% VT cada"
+                  />
+                )}
+              </PreviewPhase>
+              <PreviewPhase num="3" title={`Pós-obra (60% VT · ${TD_POS_OBRA_PARCELAS}x)`}>
+                <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
+                  Direto com a construtora, a partir de{" "}
+                  {input.posObraInicio || "(definir)"}.
+                </p>
+                <PreviewEntradaRow
+                  label="Parcela estimada"
+                  parcelas={TD_POS_OBRA_PARCELAS}
+                  parcela={td.posObraParcela}
+                  total={td.posObraTotal}
+                  via={`PRICE · ${(input.posObraJurosAA || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
+                />
+              </PreviewPhase>
+            </>
+          ) : (
+            <>
+              <PreviewPhase num="1" title="Entrada">
+                <PreviewEntradaRow
+                  label="Sinal ato"
+                  parcelas={input.saParcelas}
+                  parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
+                  total={c.sa}
+                  via="no cartão"
+                />
+                <PreviewEntradaRow
+                  label="Entrada Cliente"
+                  parcelas={Math.max(1, input.ecParcelas || 1)}
+                  parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
+                  total={c.ec}
+                  via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
+                />
+                <PreviewEntradaRow
+                  label="Pró-soluto"
+                  parcelas={input.psParcelas}
+                  parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
+                  parcelaCorrigida={proSolutoParcelaCorrigida(c.ps, input.psParcelas)}
+                  total={c.ps}
+                  via="boleto c/ correção"
+                />
+              </PreviewPhase>
+              <PreviewPhase num="2" title="Seguro de Obra">
+                {(() => {
+                  const m = tempoObraMeses(input.entrega);
+                  const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, m, input.seguroMarcos);
+                  if (evo.length < 2) {
+                    return (
+                      <>
+                        <PreviewRow label="Inicial" value={formatBRLCompact(input.seguroInicial)} />
+                        <PreviewRow label="Final (≈)" value={formatBRLCompact(input.seguroFinal)} />
+                      </>
+                    );
+                  }
+                  const max = evo[evo.length - 1].valor;
+                  return (
+                    <div className="px-1">
+                      <p className="text-[10px] opacity-80 mb-1.5">
+                        Evolui junto com a obra · começa pequeno e cresce até a entrega
+                      </p>
+                      <div className="flex items-end gap-[3px] h-14 border-b border-white/15 pb-0.5">
+                        {evo.map((p, i) => {
+                          const h = Math.max(6, (p.valor / max) * 100);
+                          return (
+                            <div
+                              key={i}
+                              className="flex-1 rounded-sm"
+                              style={{
+                                height: `${h}%`,
+                                background:
+                                  i === evo.length - 1
+                                    ? "var(--gold)"
+                                    : "color-mix(in oklab, var(--gold) 60%, transparent)",
+                              }}
+                              title={`Mês ${p.mes}: ${formatBRLCompact(p.valor)}`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div className="flex justify-between text-[9px] opacity-70 mt-1">
+                        <span>±{formatBRLCompact(input.seguroInicial)} · hoje</span>
+                        <span>±{formatBRLCompact(input.seguroFinal)} · entrega</span>
+                      </div>
+                      {input.seguroFinal > 0 && evo.length > 0 && (
+                        <p className="text-[9px] opacity-70 text-center mt-0.5">
+                          média ±{formatBRLCompact(evo.reduce((s, p) => s + p.valor, 0) / evo.length)}/mês · {m} meses
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+              </PreviewPhase>
+              <PreviewPhase num="3" title="Pós-obra">
+                <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
+                  Financiamento direto com o banco, a partir de{" "}
+                  {input.posObraInicio || "(definir)"}.
+                </p>
+                <PreviewEntradaRow
+                  label="Valor da parcela"
+                  parcelas={input.posObraPrazoMeses || 0}
+                  parcela={
+                    c.vf > 0 && input.posObraPrazoMeses > 0
+                      ? parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)
+                      : 0
+                  }
+                  total={c.vf}
+                  via={`PRICE · ${(input.posObraJurosAA || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
+                />
+              </PreviewPhase>
+            </>
+          )}
         </div>
 
         <div className="bg-[#f6f2eb] text-[#5a5a5a] px-5 py-3 border-t-2 border-[var(--gold)]">
