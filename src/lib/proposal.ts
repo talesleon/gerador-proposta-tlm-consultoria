@@ -233,6 +233,9 @@ export function parcelaPricePosObra(vf: number, n: number, jurosAA: number): num
 }
 
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
+  if (input.sistemaFinanciamento === "TABELA_DIRETA") {
+    return buildWhatsAppTextTabelaDireta(input);
+  }
   const sections: string[][] = [];
   const sep = "━━━━━━━━━━━━";
 
