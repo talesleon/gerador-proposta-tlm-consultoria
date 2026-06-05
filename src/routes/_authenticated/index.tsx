@@ -95,6 +95,7 @@ const DEFAULT: ProposalInput = {
   posObraInicio: "",
   posObraPrazoMeses: 360,
   posObraJurosAA: 10.5,
+  tdIntermediariasQtd: 0,
 };
 
 function Index() {
