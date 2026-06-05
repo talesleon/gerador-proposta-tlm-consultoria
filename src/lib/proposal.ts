@@ -331,6 +331,66 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   return sections.map((s) => s.join("\n")).join(`\n\n${sep}\n\n`);
 }
 
+function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
+  const td = computeTabelaDireta(input);
+  const sep = "━━━━━━━━━━━━";
+  const sections: string[][] = [];
+
+  const header: string[] = [];
+  const unidadeTipologia = [input.unidade, input.tipologia].filter(Boolean).join(" | ");
+  header.push(`🏢 *${input.empreendimento || "Empreendimento"}* | ${unidadeTipologia}`);
+  header.push("");
+  header.push("Modalidade: *TABELA DIRETA*");
+  if (input.entrega) header.push(`Entrega: *${input.entrega}*`);
+  sections.push(header);
+
+  const valores: string[] = [];
+  valores.push(`💰 *VALOR DE TABELA*`);
+  valores.push("");
+  valores.push(`*${formatBRL(input.vt)}*`);
+  sections.push(valores);
+
+  const entrada: string[] = [];
+  entrada.push(`💳 *ENTRADA (10% VT)*`);
+  entrada.push("");
+  entrada.push(`Sinal no ato: *${formatBRL(td.entrada)}*`);
+  sections.push(entrada);
+
+  const obra: string[] = [];
+  obra.push(`🏗️ *OBRA (40% VT)*`);
+  obra.push("");
+  if (td.mesesObra > 0) {
+    obra.push(`Parcela mensal: *${formatBRL(td.obraMensalParcela)}* (${td.mesesObra}x)`);
+  } else {
+    obra.push(`Mensais durante a obra (informe a entrega para detalhar).`);
+  }
+  if (td.intermediariasQtd > 0) {
+    obra.push("");
+    obra.push(
+      `Intermediárias anuais: *${formatBRL(td.intermediariaValor)}* × ${td.intermediariasQtd} (5% VT cada)`,
+    );
+    obra.push(`_Pagas anualmente até a entrega._`);
+  }
+  sections.push(obra);
+
+  const pos: string[] = [];
+  pos.push(`🔑 *PÓS-OBRA (60% VT em ${TD_POS_OBRA_PARCELAS}x)*`);
+  pos.push("");
+  pos.push(`A partir de *${input.posObraInicio || "(definir)"}*.`);
+  pos.push(`Parcela estimada: *${formatBRL(td.posObraParcela)}*`);
+  pos.push(
+    `_${TD_POS_OBRA_PARCELAS}x · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. (PRICE) · direto com a construtora_`,
+  );
+  pos.push(`_Saldo financiado: ${formatBRL(td.posObraTotal)}_`);
+  sections.push(pos);
+
+  sections.push([
+    `_Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias._ Tales Medeiros · Consultoria Imobiliária · ${todayBR()}.`,
+  ]);
+
+  return sections.map((s) => s.join("\n")).join(`\n\n${sep}\n\n`);
+}
+
 export function todayBR(): string {
   return new Date().toLocaleDateString("pt-BR", {
     day: "2-digit",
