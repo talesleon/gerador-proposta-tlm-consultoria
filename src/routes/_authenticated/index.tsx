@@ -385,6 +385,98 @@ function Index() {
             </div>
           </Card>
 
+          {isTD ? (
+            <Card className="elev-1 p-5">
+              <SectionHead icon={<FileText className="h-4 w-4" />} title="Tabela Direta" />
+              <p className="text-xs text-muted-foreground mt-2">
+                Estrutura padrão sobre o <strong>Valor de Tabela</strong>: 10% entrada · 40% obra ·
+                60% pós-obra em {TD_POS_OBRA_PARCELAS}x direto com a construtora.
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Computed
+                  label="Entrada (10% VT) — sinal no ato"
+                  value={formatBRL(td.entrada)}
+                  highlight
+                />
+                <Computed
+                  label={`Obra · mensal (${td.mesesObra || "—"}x)`}
+                  value={td.obraMensalParcela > 0 ? formatBRL(td.obraMensalParcela) : "—"}
+                />
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Intermediárias anuais (5% VT)"
+                  helper={
+                    td.intermediariasMax === 0
+                      ? "Informe a entrega para liberar intermediárias"
+                      : input.tdIntermediariasQtd === 0
+                        ? `Auto: ${td.intermediariasMax}x · ${formatBRL(td.intermediariaValor)} cada`
+                        : `${td.intermediariasQtd}x · ${formatBRL(td.intermediariaValor)} cada (máx ${td.intermediariasMax})`
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.tdIntermediariasQtd)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 0 : Math.min(8, Number(digits));
+                      set("tdIntermediariasQtd", n);
+                    }}
+                    placeholder="0 = automático"
+                  />
+                </Field>
+                <Computed
+                  label="Soma das intermediárias"
+                  value={formatBRL(td.intermediariasTotal)}
+                />
+              </div>
+
+              <Separator className="my-5" />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Início do pós-obra (mês/ano)">
+                  <Input
+                    value={input.posObraInicio}
+                    onChange={(e) => set("posObraInicio", e.target.value)}
+                    placeholder="março de 2029"
+                  />
+                </Field>
+                <Field
+                  label="Juros pós-obra (% ao ano)"
+                  helper={
+                    td.posObraTotal > 0
+                      ? `Parcela ≈ ${formatBRL(td.posObraParcela)} em ${TD_POS_OBRA_PARCELAS}x`
+                      : "Ex.: 10,5"
+                  }
+                >
+                  <Input
+                    inputMode="decimal"
+                    value={String(input.posObraJurosAA).replace(".", ",")}
+                    onChange={(e) => {
+                      const cleaned = e.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
+                      const n = Number(cleaned);
+                      set("posObraJurosAA", Number.isFinite(n) ? n : 0);
+                    }}
+                    placeholder="10,5"
+                  />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <Computed
+                  label={`Pós-obra · parcela (${TD_POS_OBRA_PARCELAS}x PRICE)`}
+                  value={td.posObraParcela > 0 ? formatBRL(td.posObraParcela) : "—"}
+                  highlight
+                />
+                <Computed
+                  label="Saldo financiado (60% VT)"
+                  value={formatBRL(td.posObraTotal)}
+                />
+              </div>
+            </Card>
+          ) : (
+            <>
           {/* Pagamento */}
           <Card className="elev-1 p-5">
             <SectionHead icon={<FileText className="h-4 w-4" />} title="Composição da entrada" />
@@ -571,6 +663,8 @@ function Index() {
               </Field>
             </div>
           </Card>
+            </>
+          )}
         </section>
 
         {/* ─────────── PREVIEW ─────────── */}
