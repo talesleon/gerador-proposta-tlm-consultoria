@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import {
+  compute,
   computeTabelaDireta,
   formatBRL,
   formatBRLCompact,
@@ -537,17 +538,50 @@ function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
     y += 5.5;
   };
 
-  // ── Fase 1: Entrada
+  // ── Fase 1: Entrada (10% VT) = S.A + E.C
   phaseTitle("1", "Entrada · 10% VT");
+  const c = compute(input);
+
+  // S.A
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   setColor(TEXT_SOFT);
-  txt("Sinal no ato", M + 2, y + 1);
+  txt("Sinal ato", M + 2, y + 1);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
+  doc.setFontSize(12);
   setColor(WHITE);
-  txt(formatBRL(td.entrada), W - M, y + 1.5, { align: "right" });
-  y += 8;
+  const saParcela = input.saParcelas > 0 ? c.sa / input.saParcelas : c.sa;
+  txt(formatBRL(saParcela), W - M, y + 1.5, { align: "right" });
+  y += 5.5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.2);
+  setColor(GOLD_SOFT);
+  txt(`${input.saParcelas}x no cartão · total ${formatBRL(c.sa)}`, W - M, y, { align: "right" });
+  y += 5;
+
+  // E.C (se houver)
+  if (c.ec > 0) {
+    const ecN = Math.max(1, input.ecParcelas || 1);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    setColor(TEXT_SOFT);
+    txt("Entrada cliente", M + 2, y + 1);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    setColor(WHITE);
+    txt(formatBRL(c.ec / ecN), W - M, y + 1.5, { align: "right" });
+    y += 5.5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.2);
+    setColor(GOLD_SOFT);
+    txt(
+      `${ecN === 1 ? "à vista" : `${ecN}x no boleto`} · total ${formatBRL(c.ec)}`,
+      W - M,
+      y,
+      { align: "right" },
+    );
+    y += 5;
+  }
 
   // ── Fase 2: Obra
   phaseTitle("2", "Obra · 40% VT");

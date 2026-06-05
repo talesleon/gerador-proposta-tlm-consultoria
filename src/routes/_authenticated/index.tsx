@@ -377,10 +377,17 @@ function Index() {
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <Computed
-                label={`V.F · Financiável (${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% V.A)`}
+                label={
+                  isTD
+                    ? "V.F · Financiável (V.T − V.E)"
+                    : `V.F · Financiável (${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% V.A)`
+                }
                 value={formatBRL(c.vf)}
               />
-              <Computed label="V.E · Entrada (V.V − V.F)" value={formatBRL(c.ve)} />
+              <Computed
+                label={isTD ? "V.E · Entrada (10% V.T)" : "V.E · Entrada (V.V − V.F)"}
+                value={formatBRL(c.ve)}
+              />
             </div>
           </Card>
 
@@ -392,11 +399,81 @@ function Index() {
                 60% pós-obra em {TD_POS_OBRA_PARCELAS}x direto com a construtora.
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Computed
-                  label="Entrada (10% VT) — sinal no ato"
-                  value={formatBRL(td.entrada)}
-                  highlight
-                />
+                <Field
+                  label="S.A — Sinal Ato"
+                  helper={
+                    saOverflow
+                      ? "S.A maior que V.E"
+                      : `Padrão 2% V.T = ${formatBRL(c.saDefault)}`
+                  }
+                  warn={saOverflow}
+                  trailing={
+                    input.saOverride !== null && (
+                      <button
+                        type="button"
+                        onClick={() => set("saOverride", null)}
+                        className="text-[10px] uppercase tracking-wider text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        <RotateCcw className="h-3 w-3" /> 2%
+                      </button>
+                    )
+                  }
+                >
+                  <MoneyInput value={c.sa} onChange={(n) => set("saOverride", n)} />
+                </Field>
+                <Field
+                  label="Parcelas do Sinal (cartão)"
+                  helper={
+                    input.saParcelas > 0 && c.sa > 0
+                      ? `≈ ${formatBRL(c.sa / input.saParcelas)} / mês`
+                      : undefined
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.saParcelas)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 1 : Math.max(1, Math.min(12, Number(digits)));
+                      set("saParcelas", n);
+                    }}
+                  />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="E.C — Entrada Cliente"
+                  helper={
+                    !c.ecValid
+                      ? "S.A + E.C maior que V.E"
+                      : `Restante de V.E após S.A: ${formatBRL(Math.max(0, c.ve - c.sa))}`
+                  }
+                  warn={!c.ecValid}
+                >
+                  <MoneyInput value={input.ec} onChange={(n) => set("ec", n)} />
+                </Field>
+                <Field
+                  label="Parcelas da Entrada Cliente"
+                  helper={
+                    input.ecParcelas > 0 && c.ec > 0
+                      ? `≈ ${formatBRL(c.ec / input.ecParcelas)} / mês`
+                      : "1 = à vista"
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.ecParcelas)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 1 : Math.max(1, Number(digits));
+                      set("ecParcelas", n);
+                    }}
+                  />
+                </Field>
+              </div>
+
+              <div className="mt-4">
                 <Computed
                   label={`Obra · mensal (${td.mesesObra || "—"}x)`}
                   value={td.obraMensalParcela > 0 ? formatBRL(td.obraMensalParcela) : "—"}
@@ -901,10 +978,22 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
           {isTD ? (
             <>
               <PreviewPhase num="1" title="Entrada (10% VT)">
-                <PreviewRow
-                  label="Sinal no ato"
-                  value={formatBRL(td.entrada)}
+                <PreviewEntradaRow
+                  label="Sinal ato"
+                  parcelas={input.saParcelas}
+                  parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
+                  total={c.sa}
+                  via="no cartão"
                 />
+                {c.ec > 0 && (
+                  <PreviewEntradaRow
+                    label="Entrada Cliente"
+                    parcelas={Math.max(1, input.ecParcelas || 1)}
+                    parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
+                    total={c.ec}
+                    via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
+                  />
+                )}
               </PreviewPhase>
               <PreviewPhase num="2" title="Obra (40% VT)">
                 <PreviewEntradaRow
