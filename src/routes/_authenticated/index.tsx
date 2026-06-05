@@ -26,7 +26,6 @@ import {
   type ProposalInput,
   type SistemaFinanciamento,
   FINANCIAMENTO_PCT,
-  TD_PCT,
   TD_POS_OBRA_PARCELAS,
 } from "@/lib/proposal";
 import {
