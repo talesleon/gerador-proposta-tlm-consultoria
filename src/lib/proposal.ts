@@ -364,7 +364,18 @@ function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
   const entrada: string[] = [];
   entrada.push(`💳 *ENTRADA (10% VT)*`);
   entrada.push("");
-  entrada.push(`Sinal no ato: *${formatBRL(td.entrada)}*`);
+  const cTD = compute(input);
+  const saParcela = input.saParcelas > 0 ? cTD.sa / input.saParcelas : cTD.sa;
+  const saVia = input.saParcelas > 1 ? `${input.saParcelas}x no cartão` : "à vista";
+  entrada.push(`Sinal ato: *${formatBRL(saParcela)}* — ${saVia}`);
+  entrada.push(`_(Total ${formatBRL(cTD.sa)})_`);
+  if (cTD.ec > 0) {
+    const ecN = Math.max(1, input.ecParcelas || 1);
+    const ecVia = ecN === 1 ? "à vista" : `${ecN}x no boleto`;
+    entrada.push("");
+    entrada.push(`Entrada cliente: *${formatBRL(cTD.ec / ecN)}* — ${ecVia}`);
+    entrada.push(`_(Total ${formatBRL(cTD.ec)})_`);
+  }
   sections.push(entrada);
 
   const obra: string[] = [];
