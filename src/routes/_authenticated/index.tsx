@@ -377,10 +377,17 @@ function Index() {
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <Computed
-                label={`V.F · Financiável (${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% V.A)`}
+                label={
+                  isTD
+                    ? "V.F · Financiável (V.T − V.E)"
+                    : `V.F · Financiável (${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% V.A)`
+                }
                 value={formatBRL(c.vf)}
               />
-              <Computed label="V.E · Entrada (V.V − V.F)" value={formatBRL(c.ve)} />
+              <Computed
+                label={isTD ? "V.E · Entrada (10% V.T)" : "V.E · Entrada (V.V − V.F)"}
+                value={formatBRL(c.ve)}
+              />
             </div>
           </Card>
 
