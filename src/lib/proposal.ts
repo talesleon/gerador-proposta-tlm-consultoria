@@ -136,13 +136,24 @@ export interface ProposalComputed {
 }
 
 export function compute(input: ProposalInput): ProposalComputed {
-  const pct = FINANCIAMENTO_PCT[input.sistemaFinanciamento] ?? 0.8;
-  const vf = input.va * pct;
-  const ve = Math.max(0, input.vv - vf);
-  const saDefault = input.vv * 0.02;
+  const isTD = input.sistemaFinanciamento === "TABELA_DIRETA";
+  let vf: number;
+  let ve: number;
+  let saDefault: number;
+  if (isTD) {
+    // Tabela Direta: V.F = V.T − V.E, com V.E = 10% V.T e S.A padrão = 2% V.T.
+    vf = input.vt * (1 - TD_PCT.entrada);
+    ve = input.vt * TD_PCT.entrada;
+    saDefault = input.vt * 0.02;
+  } else {
+    const pct = FINANCIAMENTO_PCT[input.sistemaFinanciamento] ?? 0.8;
+    vf = input.va * pct;
+    ve = Math.max(0, input.vv - vf);
+    saDefault = input.vv * 0.02;
+  }
   const sa = input.saOverride ?? saDefault;
   const ec = Math.max(0, input.ec || 0);
-  const ps = Math.max(0, ve - sa - ec);
+  const ps = isTD ? 0 : Math.max(0, ve - sa - ec);
   const psMax = MAX_PS_PARCELAS[input.builder];
   return {
     vf,
@@ -153,7 +164,7 @@ export function compute(input: ProposalInput): ProposalComputed {
     ps,
     saValid: sa >= 0 && sa <= ve,
     ecValid: ec >= 0 && sa + ec <= ve,
-    psValid: input.psParcelas >= 1 && input.psParcelas <= psMax,
+    psValid: isTD ? true : input.psParcelas >= 1 && input.psParcelas <= psMax,
     psMax,
   };
 }
