@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import {
   buildWhatsAppText,
   compute,
+  computeTabelaDireta,
   formatBRL,
   formatBRLCompact,
   MAX_PS_PARCELAS,
@@ -25,6 +26,8 @@ import {
   type ProposalInput,
   type SistemaFinanciamento,
   FINANCIAMENTO_PCT,
+  TD_PCT,
+  TD_POS_OBRA_PARCELAS,
 } from "@/lib/proposal";
 import {
   Select,
