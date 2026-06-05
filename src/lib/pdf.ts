@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import {
+  computeTabelaDireta,
   formatBRL,
   formatBRLCompact,
   parcelaPricePosObra,
@@ -7,6 +8,7 @@ import {
   seguroEvolucao,
   tempoObraMeses,
   todayBR,
+  TD_POS_OBRA_PARCELAS,
   type ProposalComputed,
   type ProposalInput,
 } from "./proposal";
