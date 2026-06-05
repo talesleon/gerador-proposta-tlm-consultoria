@@ -48,6 +48,78 @@ export interface ProposalInput {
   posObraInicio: string;
   posObraPrazoMeses: number;
   posObraJurosAA: number; // juros nominais ao ano (%)
+  /** Tabela Direta: nº de intermediárias anuais (5% do VT cada). 0 = automático. */
+  tdIntermediariasQtd: number;
+}
+
+export interface TabelaDiretaComputed {
+  /** Sinal único no ato (10% VT). */
+  entrada: number;
+  /** Valor de cada intermediária (5% VT). */
+  intermediariaValor: number;
+  /** Quantidade efetiva de intermediárias até a entrega. */
+  intermediariasQtd: number;
+  /** Soma das intermediárias. */
+  intermediariasTotal: number;
+  /** Saldo de obra pago em mensais (40% VT − intermediárias). */
+  obraMensalTotal: number;
+  /** Valor da parcela mensal durante a obra. */
+  obraMensalParcela: number;
+  /** Meses de obra calculados a partir da entrega. */
+  mesesObra: number;
+  /** Saldo financiado direto com a construtora (60% VT). */
+  posObraTotal: number;
+  /** Quantidade fixa: 120 parcelas. */
+  posObraParcelas: number;
+  /** Valor da parcela pós-obra (PRICE com juros). */
+  posObraParcela: number;
+  /** Máximo de intermediárias possíveis (40% / 5% = 8). */
+  intermediariasMax: number;
+  /** Soma de validação: entrada + obra + pós-obra deve = VT. */
+  totalContrato: number;
+}
+
+/**
+ * Cálculo da Tabela Direta sobre o Valor de Tabela (VT).
+ * - 10% entrada (sinal único)
+ * - 40% obra: mensais + intermediárias anuais de 5% VT (até a entrega)
+ * - 60% pós-obra em 120x com juros configuráveis (PRICE)
+ */
+export function computeTabelaDireta(input: ProposalInput): TabelaDiretaComputed {
+  const vt = Math.max(0, input.vt || 0);
+  const entrada = vt * TD_PCT.entrada;
+  const obraTotal = vt * TD_PCT.obra;
+  const posObraTotal = vt * TD_PCT.posObra;
+  const intermediariaValor = vt * TD_PCT.intermediaria;
+  const mesesObra = tempoObraMeses(input.entrega);
+  const anosObra = Math.max(0, Math.floor(mesesObra / 12));
+  const intermediariasMax = Math.min(anosObra, Math.floor(TD_PCT.obra / TD_PCT.intermediaria));
+  const qtdSolicitada = input.tdIntermediariasQtd > 0
+    ? input.tdIntermediariasQtd
+    : intermediariasMax;
+  const intermediariasQtd = Math.max(0, Math.min(qtdSolicitada, intermediariasMax));
+  const intermediariasTotal = intermediariasQtd * intermediariaValor;
+  const obraMensalTotal = Math.max(0, obraTotal - intermediariasTotal);
+  const obraMensalParcela = mesesObra > 0 ? obraMensalTotal / mesesObra : 0;
+  const posObraParcela = parcelaPricePosObra(
+    posObraTotal,
+    TD_POS_OBRA_PARCELAS,
+    input.posObraJurosAA,
+  );
+  return {
+    entrada,
+    intermediariaValor,
+    intermediariasQtd,
+    intermediariasTotal,
+    obraMensalTotal,
+    obraMensalParcela,
+    mesesObra,
+    posObraTotal,
+    posObraParcelas: TD_POS_OBRA_PARCELAS,
+    posObraParcela,
+    intermediariasMax,
+    totalContrato: entrada + obraTotal + posObraTotal,
+  };
 }
 
 export interface ProposalComputed {
