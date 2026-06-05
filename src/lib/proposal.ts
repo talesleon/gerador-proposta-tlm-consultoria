@@ -7,12 +7,23 @@ export const MAX_PS_PARCELAS: Record<Builder, number> = {
   Direcional: 84,
 };
 
-export type SistemaFinanciamento = "SAC" | "PRICE";
+export type SistemaFinanciamento = "SAC" | "PRICE" | "TABELA_DIRETA";
 
 export const FINANCIAMENTO_PCT: Record<SistemaFinanciamento, number> = {
   SAC: 0.9,
   PRICE: 0.8,
+  TABELA_DIRETA: 0,
 };
+
+/** Percentuais fixos da Tabela Direta sobre o Valor de Tabela (VT). */
+export const TD_PCT = {
+  entrada: 0.1,
+  obra: 0.4,
+  posObra: 0.6,
+  intermediaria: 0.05,
+} as const;
+
+export const TD_POS_OBRA_PARCELAS = 120;
 
 export interface ProposalInput {
   builder: Builder;
@@ -37,6 +48,78 @@ export interface ProposalInput {
   posObraInicio: string;
   posObraPrazoMeses: number;
   posObraJurosAA: number; // juros nominais ao ano (%)
+  /** Tabela Direta: nº de intermediárias anuais (5% do VT cada). 0 = automático. */
+  tdIntermediariasQtd: number;
+}
+
+export interface TabelaDiretaComputed {
+  /** Sinal único no ato (10% VT). */
+  entrada: number;
+  /** Valor de cada intermediária (5% VT). */
+  intermediariaValor: number;
+  /** Quantidade efetiva de intermediárias até a entrega. */
+  intermediariasQtd: number;
+  /** Soma das intermediárias. */
+  intermediariasTotal: number;
+  /** Saldo de obra pago em mensais (40% VT − intermediárias). */
+  obraMensalTotal: number;
+  /** Valor da parcela mensal durante a obra. */
+  obraMensalParcela: number;
+  /** Meses de obra calculados a partir da entrega. */
+  mesesObra: number;
+  /** Saldo financiado direto com a construtora (60% VT). */
+  posObraTotal: number;
+  /** Quantidade fixa: 120 parcelas. */
+  posObraParcelas: number;
+  /** Valor da parcela pós-obra (PRICE com juros). */
+  posObraParcela: number;
+  /** Máximo de intermediárias possíveis (40% / 5% = 8). */
+  intermediariasMax: number;
+  /** Soma de validação: entrada + obra + pós-obra deve = VT. */
+  totalContrato: number;
+}
+
+/**
+ * Cálculo da Tabela Direta sobre o Valor de Tabela (VT).
+ * - 10% entrada (sinal único)
+ * - 40% obra: mensais + intermediárias anuais de 5% VT (até a entrega)
+ * - 60% pós-obra em 120x com juros configuráveis (PRICE)
+ */
+export function computeTabelaDireta(input: ProposalInput): TabelaDiretaComputed {
+  const vt = Math.max(0, input.vt || 0);
+  const entrada = vt * TD_PCT.entrada;
+  const obraTotal = vt * TD_PCT.obra;
+  const posObraTotal = vt * TD_PCT.posObra;
+  const intermediariaValor = vt * TD_PCT.intermediaria;
+  const mesesObra = tempoObraMeses(input.entrega);
+  const anosObra = Math.max(0, Math.floor(mesesObra / 12));
+  const intermediariasMax = Math.min(anosObra, Math.floor(TD_PCT.obra / TD_PCT.intermediaria));
+  const qtdSolicitada = input.tdIntermediariasQtd > 0
+    ? input.tdIntermediariasQtd
+    : intermediariasMax;
+  const intermediariasQtd = Math.max(0, Math.min(qtdSolicitada, intermediariasMax));
+  const intermediariasTotal = intermediariasQtd * intermediariaValor;
+  const obraMensalTotal = Math.max(0, obraTotal - intermediariasTotal);
+  const obraMensalParcela = mesesObra > 0 ? obraMensalTotal / mesesObra : 0;
+  const posObraParcela = parcelaPricePosObra(
+    posObraTotal,
+    TD_POS_OBRA_PARCELAS,
+    input.posObraJurosAA,
+  );
+  return {
+    entrada,
+    intermediariaValor,
+    intermediariasQtd,
+    intermediariasTotal,
+    obraMensalTotal,
+    obraMensalParcela,
+    mesesObra,
+    posObraTotal,
+    posObraParcelas: TD_POS_OBRA_PARCELAS,
+    posObraParcela,
+    intermediariasMax,
+    totalContrato: entrada + obraTotal + posObraTotal,
+  };
 }
 
 export interface ProposalComputed {
@@ -150,6 +233,9 @@ export function parcelaPricePosObra(vf: number, n: number, jurosAA: number): num
 }
 
 export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): string {
+  if (input.sistemaFinanciamento === "TABELA_DIRETA") {
+    return buildWhatsAppTextTabelaDireta(input);
+  }
   const sections: string[][] = [];
   const sep = "━━━━━━━━━━━━";
 
@@ -238,6 +324,66 @@ export function buildWhatsAppText(input: ProposalInput, c: ProposalComputed): st
   sections.push(pos);
 
   // Disclaimer
+  sections.push([
+    `_Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias._ Tales Medeiros · Consultoria Imobiliária · ${todayBR()}.`,
+  ]);
+
+  return sections.map((s) => s.join("\n")).join(`\n\n${sep}\n\n`);
+}
+
+function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
+  const td = computeTabelaDireta(input);
+  const sep = "━━━━━━━━━━━━";
+  const sections: string[][] = [];
+
+  const header: string[] = [];
+  const unidadeTipologia = [input.unidade, input.tipologia].filter(Boolean).join(" | ");
+  header.push(`🏢 *${input.empreendimento || "Empreendimento"}* | ${unidadeTipologia}`);
+  header.push("");
+  header.push("Modalidade: *TABELA DIRETA*");
+  if (input.entrega) header.push(`Entrega: *${input.entrega}*`);
+  sections.push(header);
+
+  const valores: string[] = [];
+  valores.push(`💰 *VALOR DE TABELA*`);
+  valores.push("");
+  valores.push(`*${formatBRL(input.vt)}*`);
+  sections.push(valores);
+
+  const entrada: string[] = [];
+  entrada.push(`💳 *ENTRADA (10% VT)*`);
+  entrada.push("");
+  entrada.push(`Sinal no ato: *${formatBRL(td.entrada)}*`);
+  sections.push(entrada);
+
+  const obra: string[] = [];
+  obra.push(`🏗️ *OBRA (40% VT)*`);
+  obra.push("");
+  if (td.mesesObra > 0) {
+    obra.push(`Parcela mensal: *${formatBRL(td.obraMensalParcela)}* (${td.mesesObra}x)`);
+  } else {
+    obra.push(`Mensais durante a obra (informe a entrega para detalhar).`);
+  }
+  if (td.intermediariasQtd > 0) {
+    obra.push("");
+    obra.push(
+      `Intermediárias anuais: *${formatBRL(td.intermediariaValor)}* × ${td.intermediariasQtd} (5% VT cada)`,
+    );
+    obra.push(`_Pagas anualmente até a entrega._`);
+  }
+  sections.push(obra);
+
+  const pos: string[] = [];
+  pos.push(`🔑 *PÓS-OBRA (60% VT em ${TD_POS_OBRA_PARCELAS}x)*`);
+  pos.push("");
+  pos.push(`A partir de *${input.posObraInicio || "(definir)"}*.`);
+  pos.push(`Parcela estimada: *${formatBRL(td.posObraParcela)}*`);
+  pos.push(
+    `_${TD_POS_OBRA_PARCELAS}x · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. (PRICE) · direto com a construtora_`,
+  );
+  pos.push(`_Saldo financiado: ${formatBRL(td.posObraTotal)}_`);
+  sections.push(pos);
+
   sections.push([
     `_Simulação. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias._ Tales Medeiros · Consultoria Imobiliária · ${todayBR()}.`,
   ]);

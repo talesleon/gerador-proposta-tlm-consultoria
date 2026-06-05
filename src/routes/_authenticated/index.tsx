@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import {
   buildWhatsAppText,
   compute,
+  computeTabelaDireta,
   formatBRL,
   formatBRLCompact,
   MAX_PS_PARCELAS,
@@ -25,6 +26,7 @@ import {
   type ProposalInput,
   type SistemaFinanciamento,
   FINANCIAMENTO_PCT,
+  TD_POS_OBRA_PARCELAS,
 } from "@/lib/proposal";
 import {
   Select,
@@ -95,6 +97,7 @@ const DEFAULT: ProposalInput = {
   posObraInicio: "",
   posObraPrazoMeses: 360,
   posObraJurosAA: 10.5,
+  tdIntermediariasQtd: 0,
 };
 
 function Index() {
@@ -105,6 +108,8 @@ function Index() {
   const [proposals, setProposals] = useState<SavedProposal[]>([]);
 
   const c = useMemo(() => compute(input), [input]);
+  const td = useMemo(() => computeTabelaDireta(input), [input]);
+  const isTD = input.sistemaFinanciamento === "TABELA_DIRETA";
   const text = useMemo(() => buildWhatsAppText(input, c), [input, c]);
 
   useEffect(() => {
@@ -329,7 +334,11 @@ function Index() {
             <div className="mt-4">
               <Field
                 label="Sistema de Financiamento"
-                helper={`V.F = ${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% do V.A`}
+                helper={
+                  input.sistemaFinanciamento === "TABELA_DIRETA"
+                    ? "Tabela Direta: 10% entrada · 40% obra · 60% pós-obra (120x). Tudo direto com a construtora."
+                    : `V.F = ${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% do V.A`
+                }
               >
                 <Select
                   value={input.sistemaFinanciamento}
@@ -341,6 +350,7 @@ function Index() {
                   <SelectContent>
                     <SelectItem value="SAC">SAC (90% V.A)</SelectItem>
                     <SelectItem value="PRICE">PRICE (80% V.A)</SelectItem>
+                    <SelectItem value="TABELA_DIRETA">Tabela Direta (direto com a construtora)</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -374,6 +384,98 @@ function Index() {
             </div>
           </Card>
 
+          {isTD ? (
+            <Card className="elev-1 p-5">
+              <SectionHead icon={<FileText className="h-4 w-4" />} title="Tabela Direta" />
+              <p className="text-xs text-muted-foreground mt-2">
+                Estrutura padrão sobre o <strong>Valor de Tabela</strong>: 10% entrada · 40% obra ·
+                60% pós-obra em {TD_POS_OBRA_PARCELAS}x direto com a construtora.
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Computed
+                  label="Entrada (10% VT) — sinal no ato"
+                  value={formatBRL(td.entrada)}
+                  highlight
+                />
+                <Computed
+                  label={`Obra · mensal (${td.mesesObra || "—"}x)`}
+                  value={td.obraMensalParcela > 0 ? formatBRL(td.obraMensalParcela) : "—"}
+                />
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Intermediárias anuais (5% VT)"
+                  helper={
+                    td.intermediariasMax === 0
+                      ? "Informe a entrega para liberar intermediárias"
+                      : input.tdIntermediariasQtd === 0
+                        ? `Auto: ${td.intermediariasMax}x · ${formatBRL(td.intermediariaValor)} cada`
+                        : `${td.intermediariasQtd}x · ${formatBRL(td.intermediariaValor)} cada (máx ${td.intermediariasMax})`
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.tdIntermediariasQtd)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 0 : Math.min(8, Number(digits));
+                      set("tdIntermediariasQtd", n);
+                    }}
+                    placeholder="0 = automático"
+                  />
+                </Field>
+                <Computed
+                  label="Soma das intermediárias"
+                  value={formatBRL(td.intermediariasTotal)}
+                />
+              </div>
+
+              <Separator className="my-5" />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Início do pós-obra (mês/ano)">
+                  <Input
+                    value={input.posObraInicio}
+                    onChange={(e) => set("posObraInicio", e.target.value)}
+                    placeholder="março de 2029"
+                  />
+                </Field>
+                <Field
+                  label="Juros pós-obra (% ao ano)"
+                  helper={
+                    td.posObraTotal > 0
+                      ? `Parcela ≈ ${formatBRL(td.posObraParcela)} em ${TD_POS_OBRA_PARCELAS}x`
+                      : "Ex.: 10,5"
+                  }
+                >
+                  <Input
+                    inputMode="decimal"
+                    value={String(input.posObraJurosAA).replace(".", ",")}
+                    onChange={(e) => {
+                      const cleaned = e.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
+                      const n = Number(cleaned);
+                      set("posObraJurosAA", Number.isFinite(n) ? n : 0);
+                    }}
+                    placeholder="10,5"
+                  />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <Computed
+                  label={`Pós-obra · parcela (${TD_POS_OBRA_PARCELAS}x PRICE)`}
+                  value={td.posObraParcela > 0 ? formatBRL(td.posObraParcela) : "—"}
+                  highlight
+                />
+                <Computed
+                  label="Saldo financiado (60% VT)"
+                  value={formatBRL(td.posObraTotal)}
+                />
+              </div>
+            </Card>
+          ) : (
+            <>
           {/* Pagamento */}
           <Card className="elev-1 p-5">
             <SectionHead icon={<FileText className="h-4 w-4" />} title="Composição da entrada" />
@@ -560,6 +662,8 @@ function Index() {
               </Field>
             </div>
           </Card>
+            </>
+          )}
         </section>
 
         {/* ─────────── PREVIEW ─────────── */}
@@ -737,6 +841,8 @@ function Computed({
 
 function ProposalPreview({ input }: { input: ProposalInput }) {
   const c = compute(input);
+  const isTD = input.sistemaFinanciamento === "TABELA_DIRETA";
+  const td = computeTabelaDireta(input);
   return (
     <Card className="elev-3 overflow-hidden border-0 p-0">
       <div className="proposal-dark">
@@ -762,118 +868,171 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
 
           <Separator className="my-4 bg-white/10" />
 
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="text-[9px] tracking-widest uppercase opacity-50">
-                Preço Tabela
-              </div>
-              <div className="text-base line-through opacity-60">
-                {formatBRL(input.vt)}
-              </div>
-            </div>
-            <div className="text-right">
+          {isTD ? (
+            <div className="text-right mt-2">
               <div className="text-[9px] tracking-widest uppercase gold-strong">
-                Negociação
+                Valor de Tabela · Tabela Direta
               </div>
-              <div className="text-2xl font-bold">
-                {formatBRL(input.vv)}
+              <div className="text-2xl font-bold">{formatBRL(input.vt)}</div>
+            </div>
+          ) : (
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="text-[9px] tracking-widest uppercase opacity-50">
+                  Preço Tabela
+                </div>
+                <div className="text-base line-through opacity-60">
+                  {formatBRL(input.vt)}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] tracking-widest uppercase gold-strong">
+                  Negociação
+                </div>
+                <div className="text-2xl font-bold">
+                  {formatBRL(input.vv)}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-white/[0.03] border-t border-white/10">
-          <PreviewPhase num="1" title="Entrada">
-            <PreviewEntradaRow
-              label="Sinal ato"
-              parcelas={input.saParcelas}
-              parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
-              total={c.sa}
-              via="no cartão"
-            />
-            <PreviewEntradaRow
-              label="Entrada Cliente"
-              parcelas={Math.max(1, input.ecParcelas || 1)}
-              parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
-              total={c.ec}
-              via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
-            />
-            <PreviewEntradaRow
-              label="Pró-soluto"
-              parcelas={input.psParcelas}
-              parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
-              parcelaCorrigida={proSolutoParcelaCorrigida(c.ps, input.psParcelas)}
-              total={c.ps}
-              via="boleto c/ correção"
-            />
-          </PreviewPhase>
-          <PreviewPhase num="2" title="Seguro de Obra">
-            {(() => {
-              const m = tempoObraMeses(input.entrega);
-              const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, m, input.seguroMarcos);
-              if (evo.length < 2) {
-                return (
-                  <>
-                    <PreviewRow label="Inicial" value={formatBRLCompact(input.seguroInicial)} />
-                    <PreviewRow label="Final (≈)" value={formatBRLCompact(input.seguroFinal)} />
-                  </>
-                );
-              }
-              const max = evo[evo.length - 1].valor;
-              return (
-                <div className="px-1">
-                  <p className="text-[10px] opacity-80 mb-1.5">
-                    Evolui junto com a obra · começa pequeno e cresce até a entrega
-                  </p>
-                  <div className="flex items-end gap-[3px] h-14 border-b border-white/15 pb-0.5">
-                    {evo.map((p, i) => {
-                      const h = Math.max(6, (p.valor / max) * 100);
-                      return (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-sm"
-                          style={{
-                            height: `${h}%`,
-                            background:
-                              i === evo.length - 1
-                                ? "var(--gold)"
-                                : "color-mix(in oklab, var(--gold) 60%, transparent)",
-                          }}
-                          title={`Mês ${p.mes}: ${formatBRLCompact(p.valor)}`}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-between text-[9px] opacity-70 mt-1">
-                    <span>±{formatBRLCompact(input.seguroInicial)} · hoje</span>
-                    <span>±{formatBRLCompact(input.seguroFinal)} · entrega</span>
-                  </div>
-                  {input.seguroFinal > 0 && evo.length > 0 && (
-                    <p className="text-[9px] opacity-70 text-center mt-0.5">
-                      média ±{formatBRLCompact(evo.reduce((s, p) => s + p.valor, 0) / evo.length)}/mês · {m} meses
-                    </p>
-                  )}
-                </div>
-              );
-            })()}
-          </PreviewPhase>
-          <PreviewPhase num="3" title="Pós-obra">
-            <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
-              Financiamento direto com o banco, a partir de{" "}
-              {input.posObraInicio || "(definir)"}.
-            </p>
-            <PreviewEntradaRow
-              label="Valor da parcela"
-              parcelas={input.posObraPrazoMeses || 0}
-              parcela={
-                c.vf > 0 && input.posObraPrazoMeses > 0
-                  ? parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)
-                  : 0
-              }
-              total={c.vf}
-              via={`PRICE · ${(input.posObraJurosAA || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
-            />
-          </PreviewPhase>
+          {isTD ? (
+            <>
+              <PreviewPhase num="1" title="Entrada (10% VT)">
+                <PreviewRow
+                  label="Sinal no ato"
+                  value={formatBRL(td.entrada)}
+                />
+              </PreviewPhase>
+              <PreviewPhase num="2" title="Obra (40% VT)">
+                <PreviewEntradaRow
+                  label="Parcela mensal"
+                  parcelas={td.mesesObra}
+                  parcela={td.obraMensalParcela}
+                  total={td.obraMensalTotal}
+                  via="direto com a construtora"
+                />
+                {td.intermediariasQtd > 0 && (
+                  <PreviewEntradaRow
+                    label="Intermediárias"
+                    parcelas={td.intermediariasQtd}
+                    parcela={td.intermediariaValor}
+                    total={td.intermediariasTotal}
+                    via="anuais · 5% VT cada"
+                  />
+                )}
+              </PreviewPhase>
+              <PreviewPhase num="3" title={`Pós-obra (60% VT · ${TD_POS_OBRA_PARCELAS}x)`}>
+                <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
+                  Direto com a construtora, a partir de{" "}
+                  {input.posObraInicio || "(definir)"}.
+                </p>
+                <PreviewEntradaRow
+                  label="Parcela estimada"
+                  parcelas={TD_POS_OBRA_PARCELAS}
+                  parcela={td.posObraParcela}
+                  total={td.posObraTotal}
+                  via={`PRICE · ${(input.posObraJurosAA || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
+                />
+              </PreviewPhase>
+            </>
+          ) : (
+            <>
+              <PreviewPhase num="1" title="Entrada">
+                <PreviewEntradaRow
+                  label="Sinal ato"
+                  parcelas={input.saParcelas}
+                  parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
+                  total={c.sa}
+                  via="no cartão"
+                />
+                <PreviewEntradaRow
+                  label="Entrada Cliente"
+                  parcelas={Math.max(1, input.ecParcelas || 1)}
+                  parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
+                  total={c.ec}
+                  via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
+                />
+                <PreviewEntradaRow
+                  label="Pró-soluto"
+                  parcelas={input.psParcelas}
+                  parcela={input.psParcelas > 0 ? c.ps / input.psParcelas : 0}
+                  parcelaCorrigida={proSolutoParcelaCorrigida(c.ps, input.psParcelas)}
+                  total={c.ps}
+                  via="boleto c/ correção"
+                />
+              </PreviewPhase>
+              <PreviewPhase num="2" title="Seguro de Obra">
+                {(() => {
+                  const m = tempoObraMeses(input.entrega);
+                  const evo = seguroEvolucao(input.seguroInicial, input.seguroFinal, m, input.seguroMarcos);
+                  if (evo.length < 2) {
+                    return (
+                      <>
+                        <PreviewRow label="Inicial" value={formatBRLCompact(input.seguroInicial)} />
+                        <PreviewRow label="Final (≈)" value={formatBRLCompact(input.seguroFinal)} />
+                      </>
+                    );
+                  }
+                  const max = evo[evo.length - 1].valor;
+                  return (
+                    <div className="px-1">
+                      <p className="text-[10px] opacity-80 mb-1.5">
+                        Evolui junto com a obra · começa pequeno e cresce até a entrega
+                      </p>
+                      <div className="flex items-end gap-[3px] h-14 border-b border-white/15 pb-0.5">
+                        {evo.map((p, i) => {
+                          const h = Math.max(6, (p.valor / max) * 100);
+                          return (
+                            <div
+                              key={i}
+                              className="flex-1 rounded-sm"
+                              style={{
+                                height: `${h}%`,
+                                background:
+                                  i === evo.length - 1
+                                    ? "var(--gold)"
+                                    : "color-mix(in oklab, var(--gold) 60%, transparent)",
+                              }}
+                              title={`Mês ${p.mes}: ${formatBRLCompact(p.valor)}`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div className="flex justify-between text-[9px] opacity-70 mt-1">
+                        <span>±{formatBRLCompact(input.seguroInicial)} · hoje</span>
+                        <span>±{formatBRLCompact(input.seguroFinal)} · entrega</span>
+                      </div>
+                      {input.seguroFinal > 0 && evo.length > 0 && (
+                        <p className="text-[9px] opacity-70 text-center mt-0.5">
+                          média ±{formatBRLCompact(evo.reduce((s, p) => s + p.valor, 0) / evo.length)}/mês · {m} meses
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+              </PreviewPhase>
+              <PreviewPhase num="3" title="Pós-obra">
+                <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
+                  Financiamento direto com o banco, a partir de{" "}
+                  {input.posObraInicio || "(definir)"}.
+                </p>
+                <PreviewEntradaRow
+                  label="Valor da parcela"
+                  parcelas={input.posObraPrazoMeses || 0}
+                  parcela={
+                    c.vf > 0 && input.posObraPrazoMeses > 0
+                      ? parcelaPricePosObra(c.vf, input.posObraPrazoMeses, input.posObraJurosAA)
+                      : 0
+                  }
+                  total={c.vf}
+                  via={`PRICE · ${(input.posObraJurosAA || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a.`}
+                />
+              </PreviewPhase>
+            </>
+          )}
         </div>
 
         <div className="bg-[#f6f2eb] text-[#5a5a5a] px-5 py-3 border-t-2 border-[var(--gold)]">

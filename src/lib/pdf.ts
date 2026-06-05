@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import {
+  computeTabelaDireta,
   formatBRL,
   formatBRLCompact,
   parcelaPricePosObra,
@@ -7,6 +8,7 @@ import {
   seguroEvolucao,
   tempoObraMeses,
   todayBR,
+  TD_POS_OBRA_PARCELAS,
   type ProposalComputed,
   type ProposalInput,
 } from "./proposal";
@@ -25,6 +27,9 @@ const MUTED = "#8a8f99";
  * Formato 90x180mm (proporção mobile/story, ótimo no WhatsApp).
  */
 export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): jsPDF {
+  if (input.sistemaFinanciamento === "TABELA_DIRETA") {
+    return generateTabelaDiretaPDF(input);
+  }
   const W = 90;
   const H = 210;
   const M = 8; // margem segura lateral
@@ -398,6 +403,257 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
   });
 
   // Assinatura
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(5.6);
+  setColor(GOLD);
+  const footerLines = wrap(
+    `Tales Medeiros Consultor Imobiliário. Todos os Direitos Reservados. ${todayBR()}. Belo Horizonte, MG`,
+    CW,
+  );
+  fy += 1;
+  footerLines.forEach((line) => {
+    txt(line, W / 2, fy, { align: "center" });
+    fy += 2.6;
+  });
+
+  return doc;
+}
+
+/**
+ * PDF da Tabela Direta — estrutura simples: VT, entrada, obra (mensais +
+ * intermediárias), pós-obra (60% em 120x direto com a construtora).
+ */
+function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
+  const W = 90;
+  const H = 210;
+  const M = 8;
+  const CW = W - M * 2;
+  const doc = new jsPDF({ unit: "mm", format: [W, H], orientation: "portrait" });
+  const td = computeTabelaDireta(input);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFillColor(INK);
+  doc.rect(0, 0, W, H, "F");
+  doc.setFillColor(GOLD);
+  doc.rect(0, 0, W, 1.5, "F");
+
+  let y = 9;
+  const setColor = (hex: string) => doc.setTextColor(hex);
+  const txt = (
+    s: string,
+    x: number,
+    yy: number,
+    opts?: { align?: "left" | "right" | "center" },
+  ) => doc.text(s, x, yy, opts);
+  const wrap = (s: string, w: number) => doc.splitTextToSize(s, w) as string[];
+
+  // Tag superior
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  setColor(GOLD);
+  txt("Tales Medeiros Consultor - Tabela Direta", M, y);
+  y += 6;
+
+  // Título
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(15);
+  setColor(WHITE);
+  wrap(input.empreendimento || "Empreendimento", CW).forEach((line) => {
+    txt(line, M, y);
+    y += 5.5;
+  });
+  y += 0.5;
+
+  if (input.unidade) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    setColor(TEXT_SOFT);
+    txt(input.unidade, M, y);
+    y += 4;
+  }
+  if (input.tipologia) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    setColor(TEXT_SOFT);
+    wrap(input.tipologia, CW).forEach((line) => {
+      txt(line, M, y);
+      y += 3.6;
+    });
+  }
+  if (input.entrega) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    setColor(GOLD_SOFT);
+    txt(`Entrega: ${input.entrega}`, M, y + 1);
+    y += 5;
+  }
+  y += 2;
+
+  // Divisor
+  doc.setDrawColor(70, 70, 70);
+  doc.setLineWidth(0.2);
+  doc.line(M, y, W - M, y);
+  y += 5;
+
+  // Modalidade + Valor de Tabela
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.5);
+  setColor(GOLD);
+  txt("MODALIDADE TABELA DIRETA", M, y);
+  y += 5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  setColor(MUTED);
+  txt("VALOR DE TABELA", M, y);
+  y += 6;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  setColor(WHITE);
+  txt(formatBRL(input.vt), M, y);
+  y += 4;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.2);
+  setColor(GOLD_SOFT);
+  txt("Tudo direto com a construtora · sem banco", M, y + 2);
+  y += 6;
+
+  doc.setDrawColor(70, 70, 70);
+  doc.setLineWidth(0.2);
+  doc.line(M, y, W - M, y);
+  y += 6;
+
+  // Helper para chip de fase
+  const phaseTitle = (num: string, title: string) => {
+    doc.setFillColor(GOLD);
+    doc.rect(M, y - 3.2, 4.5, 4.5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    setColor(INK);
+    txt(num, M + 2.25, y, { align: "center" });
+    setColor(WHITE);
+    doc.setFontSize(8.5);
+    txt(title.toUpperCase(), M + 6.5, y);
+    y += 5.5;
+  };
+
+  // ── Fase 1: Entrada
+  phaseTitle("1", "Entrada · 10% VT");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  setColor(TEXT_SOFT);
+  txt("Sinal no ato", M + 2, y + 1);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  setColor(WHITE);
+  txt(formatBRL(td.entrada), W - M, y + 1.5, { align: "right" });
+  y += 8;
+
+  // ── Fase 2: Obra
+  phaseTitle("2", "Obra · 40% VT");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  setColor(TEXT_SOFT);
+  txt("Parcela mensal", M + 2, y + 1);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  setColor(WHITE);
+  txt(td.obraMensalParcela > 0 ? formatBRL(td.obraMensalParcela) : "—", W - M, y + 1.5, { align: "right" });
+  y += 5.5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.2);
+  setColor(GOLD_SOFT);
+  txt(`${td.mesesObra}x · direto com a construtora`, W - M, y, { align: "right" });
+  y += 3.2;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(5.8);
+  setColor(MUTED);
+  txt(`total mensais ${formatBRL(td.obraMensalTotal)}`, W - M, y, { align: "right" });
+  y += 5;
+
+  if (td.intermediariasQtd > 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    setColor(TEXT_SOFT);
+    txt("Intermediárias anuais", M + 2, y + 1);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    setColor(WHITE);
+    txt(formatBRL(td.intermediariaValor), W - M, y + 1.5, { align: "right" });
+    y += 5.5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.2);
+    setColor(GOLD_SOFT);
+    txt(`${td.intermediariasQtd}x · 5% VT cada · até a entrega`, W - M, y, { align: "right" });
+    y += 3.2;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5.8);
+    setColor(MUTED);
+    txt(`total ${formatBRL(td.intermediariasTotal)}`, W - M, y, { align: "right" });
+    y += 5;
+  }
+
+  // ── Fase 3: Pós-obra
+  phaseTitle("3", `Pós-obra · 60% VT em ${TD_POS_OBRA_PARCELAS}x`);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  setColor(TEXT_SOFT);
+  wrap(
+    `Direto com a construtora, a partir de ${input.posObraInicio || "(definir)"}.`,
+    CW - 2,
+  ).forEach((line) => {
+    txt(line, M + 2, y);
+    y += 3.6;
+  });
+  y += 4;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  setColor(TEXT_SOFT);
+  txt("Parcela estimada", M + 2, y);
+  y += 4.5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  setColor(WHITE);
+  txt(td.posObraParcela > 0 ? formatBRL(td.posObraParcela) : "—", W - M, y, { align: "right" });
+  y += 3.5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.2);
+  setColor(GOLD_SOFT);
+  txt(
+    `${TD_POS_OBRA_PARCELAS}x · ${input.posObraJurosAA.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% a.a. PRICE`,
+    W - M,
+    y,
+    { align: "right" },
+  );
+  y += 3.2;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(5.8);
+  setColor(MUTED);
+  txt(`Saldo financiado ${formatBRL(td.posObraTotal)}`, W - M, y, { align: "right" });
+  y += 4;
+
+  // Rodapé
+  const footerH = 22;
+  const footerY = H - footerH;
+  doc.setFillColor(CREAM);
+  doc.rect(0, footerY, W, footerH, "F");
+  doc.setFillColor(GOLD);
+  doc.rect(0, footerY, W, 0.7, "F");
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(5.6);
+  setColor("#5a5a5a");
+  const disc = wrap(
+    "Esta é uma simulação genérica. Valores e condições sujeitos à análise de crédito e confirmação pela construtora. Validade: 7 dias.",
+    CW,
+  );
+  let fy = footerY + 4;
+  disc.forEach((line) => {
+    txt(line, W / 2, fy, { align: "center" });
+    fy += 2.6;
+  });
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(5.6);
   setColor(GOLD);
