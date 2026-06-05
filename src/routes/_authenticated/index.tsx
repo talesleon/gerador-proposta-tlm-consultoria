@@ -399,11 +399,81 @@ function Index() {
                 60% pós-obra em {TD_POS_OBRA_PARCELAS}x direto com a construtora.
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Computed
-                  label="Entrada (10% VT) — sinal no ato"
-                  value={formatBRL(td.entrada)}
-                  highlight
-                />
+                <Field
+                  label="S.A — Sinal Ato"
+                  helper={
+                    saOverflow
+                      ? "S.A maior que V.E"
+                      : `Padrão 2% V.T = ${formatBRL(c.saDefault)}`
+                  }
+                  warn={saOverflow}
+                  trailing={
+                    input.saOverride !== null && (
+                      <button
+                        type="button"
+                        onClick={() => set("saOverride", null)}
+                        className="text-[10px] uppercase tracking-wider text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        <RotateCcw className="h-3 w-3" /> 2%
+                      </button>
+                    )
+                  }
+                >
+                  <MoneyInput value={c.sa} onChange={(n) => set("saOverride", n)} />
+                </Field>
+                <Field
+                  label="Parcelas do Sinal (cartão)"
+                  helper={
+                    input.saParcelas > 0 && c.sa > 0
+                      ? `≈ ${formatBRL(c.sa / input.saParcelas)} / mês`
+                      : undefined
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.saParcelas)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 1 : Math.max(1, Math.min(12, Number(digits)));
+                      set("saParcelas", n);
+                    }}
+                  />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="E.C — Entrada Cliente"
+                  helper={
+                    !c.ecValid
+                      ? "S.A + E.C maior que V.E"
+                      : `Restante de V.E após S.A: ${formatBRL(Math.max(0, c.ve - c.sa))}`
+                  }
+                  warn={!c.ecValid}
+                >
+                  <MoneyInput value={input.ec} onChange={(n) => set("ec", n)} />
+                </Field>
+                <Field
+                  label="Parcelas da Entrada Cliente"
+                  helper={
+                    input.ecParcelas > 0 && c.ec > 0
+                      ? `≈ ${formatBRL(c.ec / input.ecParcelas)} / mês`
+                      : "1 = à vista"
+                  }
+                >
+                  <Input
+                    inputMode="numeric"
+                    value={String(input.ecParcelas)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const n = digits === "" ? 1 : Math.max(1, Number(digits));
+                      set("ecParcelas", n);
+                    }}
+                  />
+                </Field>
+              </div>
+
+              <div className="mt-4">
                 <Computed
                   label={`Obra · mensal (${td.mesesObra || "—"}x)`}
                   value={td.obraMensalParcela > 0 ? formatBRL(td.obraMensalParcela) : "—"}
