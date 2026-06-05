@@ -333,7 +333,11 @@ function Index() {
             <div className="mt-4">
               <Field
                 label="Sistema de Financiamento"
-                helper={`V.F = ${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% do V.A`}
+                helper={
+                  input.sistemaFinanciamento === "TABELA_DIRETA"
+                    ? "Tabela Direta: 10% entrada · 40% obra · 60% pós-obra (120x). Tudo direto com a construtora."
+                    : `V.F = ${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% do V.A`
+                }
               >
                 <Select
                   value={input.sistemaFinanciamento}
@@ -345,6 +349,7 @@ function Index() {
                   <SelectContent>
                     <SelectItem value="SAC">SAC (90% V.A)</SelectItem>
                     <SelectItem value="PRICE">PRICE (80% V.A)</SelectItem>
+                    <SelectItem value="TABELA_DIRETA">Tabela Direta (direto com a construtora)</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
