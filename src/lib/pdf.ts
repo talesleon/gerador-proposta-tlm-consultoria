@@ -27,6 +27,9 @@ const MUTED = "#8a8f99";
  * Formato 90x180mm (proporção mobile/story, ótimo no WhatsApp).
  */
 export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): jsPDF {
+  if (input.sistemaFinanciamento === "TABELA_DIRETA") {
+    return generateTabelaDiretaPDF(input);
+  }
   const W = 90;
   const H = 210;
   const M = 8; // margem segura lateral
