@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import {
+  compute,
   computeTabelaDireta,
   formatBRL,
   formatBRLCompact,
