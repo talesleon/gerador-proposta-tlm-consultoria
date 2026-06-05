@@ -109,6 +109,8 @@ function Index() {
   const [proposals, setProposals] = useState<SavedProposal[]>([]);
 
   const c = useMemo(() => compute(input), [input]);
+  const td = useMemo(() => computeTabelaDireta(input), [input]);
+  const isTD = input.sistemaFinanciamento === "TABELA_DIRETA";
   const text = useMemo(() => buildWhatsAppText(input, c), [input, c]);
 
   useEffect(() => {
