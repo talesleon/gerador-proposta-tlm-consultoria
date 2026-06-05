@@ -841,6 +841,8 @@ function Computed({
 
 function ProposalPreview({ input }: { input: ProposalInput }) {
   const c = compute(input);
+  const isTD = input.sistemaFinanciamento === "TABELA_DIRETA";
+  const td = computeTabelaDireta(input);
   return (
     <Card className="elev-3 overflow-hidden border-0 p-0">
       <div className="proposal-dark">
