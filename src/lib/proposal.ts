@@ -7,12 +7,23 @@ export const MAX_PS_PARCELAS: Record<Builder, number> = {
   Direcional: 84,
 };
 
-export type SistemaFinanciamento = "SAC" | "PRICE";
+export type SistemaFinanciamento = "SAC" | "PRICE" | "TABELA_DIRETA";
 
 export const FINANCIAMENTO_PCT: Record<SistemaFinanciamento, number> = {
   SAC: 0.9,
   PRICE: 0.8,
+  TABELA_DIRETA: 0,
 };
+
+/** Percentuais fixos da Tabela Direta sobre o Valor de Tabela (VT). */
+export const TD_PCT = {
+  entrada: 0.1,
+  obra: 0.4,
+  posObra: 0.6,
+  intermediaria: 0.05,
+} as const;
+
+export const TD_POS_OBRA_PARCELAS = 120;
 
 export interface ProposalInput {
   builder: Builder;
