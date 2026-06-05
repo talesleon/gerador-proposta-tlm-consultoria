@@ -868,24 +868,33 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
 
           <Separator className="my-4 bg-white/10" />
 
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="text-[9px] tracking-widest uppercase opacity-50">
-                Preço Tabela
-              </div>
-              <div className="text-base line-through opacity-60">
-                {formatBRL(input.vt)}
-              </div>
-            </div>
-            <div className="text-right">
+          {isTD ? (
+            <div className="text-right mt-2">
               <div className="text-[9px] tracking-widest uppercase gold-strong">
-                Negociação
+                Valor de Tabela · Tabela Direta
               </div>
-              <div className="text-2xl font-bold">
-                {formatBRL(input.vv)}
+              <div className="text-2xl font-bold">{formatBRL(input.vt)}</div>
+            </div>
+          ) : (
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="text-[9px] tracking-widest uppercase opacity-50">
+                  Preço Tabela
+                </div>
+                <div className="text-base line-through opacity-60">
+                  {formatBRL(input.vt)}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] tracking-widest uppercase gold-strong">
+                  Negociação
+                </div>
+                <div className="text-2xl font-bold">
+                  {formatBRL(input.vv)}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-white/[0.03] border-t border-white/10">
