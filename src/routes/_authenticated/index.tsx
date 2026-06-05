@@ -978,10 +978,22 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
           {isTD ? (
             <>
               <PreviewPhase num="1" title="Entrada (10% VT)">
-                <PreviewRow
-                  label="Sinal no ato"
-                  value={formatBRL(td.entrada)}
+                <PreviewEntradaRow
+                  label="Sinal ato"
+                  parcelas={input.saParcelas}
+                  parcela={input.saParcelas > 0 ? c.sa / input.saParcelas : 0}
+                  total={c.sa}
+                  via="no cartão"
                 />
+                {c.ec > 0 && (
+                  <PreviewEntradaRow
+                    label="Entrada Cliente"
+                    parcelas={Math.max(1, input.ecParcelas || 1)}
+                    parcela={c.ec / Math.max(1, input.ecParcelas || 1)}
+                    total={c.ec}
+                    via={input.ecParcelas > 1 ? "no boleto" : "à vista"}
+                  />
+                )}
               </PreviewPhase>
               <PreviewPhase num="2" title="Obra (40% VT)">
                 <PreviewEntradaRow
