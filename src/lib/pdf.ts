@@ -426,7 +426,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
  */
 function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   const W = 90;
-  const H = 210;
+  const H = 250;
   const M = 8;
   const CW = W - M * 2;
   const doc = new jsPDF({ unit: "mm", format: [W, H], orientation: "portrait" });
