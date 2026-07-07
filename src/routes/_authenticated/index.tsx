@@ -336,7 +336,7 @@ function Index() {
                 label="Sistema de Financiamento"
                 helper={
                   input.sistemaFinanciamento === "TABELA_DIRETA"
-                    ? "Tabela Direta: 10% entrada · 40% obra · 60% pós-obra (120x). Tudo direto com a construtora."
+                    ? "Tabela Direta: 10% entrada · 30% obra · 60% pós-obra (120x) sobre o V.V. Tudo direto com a construtora."
                     : `V.F = ${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% do V.A`
                 }
               >
