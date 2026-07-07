@@ -80,20 +80,25 @@ export interface TabelaDiretaComputed {
 }
 
 /**
- * Cálculo da Tabela Direta sobre o Valor de Tabela (VT).
+ * Cálculo da Tabela Direta sobre o Valor de Venda (VV).
  * - 10% entrada (sinal único)
- * - 40% obra: mensais + intermediárias anuais de 5% VT (até a entrega)
+ * - 30% obra: mensais + intermediárias anuais de 5% VT (até a entrega)
  * - 60% pós-obra em 120x com juros configuráveis (PRICE)
+ * Total = 100% do V.V. Intermediárias são calculadas sobre V.T.
  */
 export function computeTabelaDireta(input: ProposalInput): TabelaDiretaComputed {
+  const vv = Math.max(0, input.vv || 0);
   const vt = Math.max(0, input.vt || 0);
-  const entrada = vt * TD_PCT.entrada;
-  const obraTotal = vt * TD_PCT.obra;
-  const posObraTotal = vt * TD_PCT.posObra;
+  const entrada = vv * TD_PCT.entrada;
+  const obraTotal = vv * TD_PCT.obra;
+  const posObraTotal = vv * TD_PCT.posObra;
   const intermediariaValor = vt * TD_PCT.intermediaria;
   const mesesObra = tempoObraMeses(input.entrega);
   const anosObra = Math.max(0, Math.floor(mesesObra / 12));
-  const intermediariasMax = Math.min(anosObra, Math.floor(TD_PCT.obra / TD_PCT.intermediaria));
+  const maxPorObra = intermediariaValor > 0
+    ? Math.floor(obraTotal / intermediariaValor)
+    : 0;
+  const intermediariasMax = Math.min(anosObra, maxPorObra);
   const qtdSolicitada = input.tdIntermediariasQtd > 0
     ? input.tdIntermediariasQtd
     : intermediariasMax;
