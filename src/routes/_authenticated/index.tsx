@@ -977,7 +977,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
         <div className="bg-white/[0.03] border-t border-white/10">
           {isTD ? (
             <>
-              <PreviewPhase num="1" title="Entrada (10% VT)">
+              <PreviewPhase num="1" title="Entrada (10% VV)">
                 <PreviewEntradaRow
                   label="Sinal ato"
                   parcelas={input.saParcelas}
