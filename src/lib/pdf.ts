@@ -539,7 +539,7 @@ function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   };
 
   // ── Fase 1: Entrada (10% VT) = S.A + E.C
-  phaseTitle("1", "Entrada · 10% VT");
+  phaseTitle("1", "Entrada · 10% VV");
   const c = compute(input);
 
   // S.A
