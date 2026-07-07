@@ -995,7 +995,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
                   />
                 )}
               </PreviewPhase>
-              <PreviewPhase num="2" title="Obra (40% VT)">
+              <PreviewPhase num="2" title="Obra (30% VV)">
                 <PreviewEntradaRow
                   label="Parcela mensal"
                   parcelas={td.mesesObra}
