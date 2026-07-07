@@ -404,7 +404,7 @@ function Index() {
                   helper={
                     saOverflow
                       ? "S.A maior que V.E"
-                      : `Padrão 2% V.T = ${formatBRL(c.saDefault)}`
+                      : `Padrão 2% V.V = ${formatBRL(c.saDefault)}`
                   }
                   warn={saOverflow}
                   trailing={
