@@ -526,14 +526,9 @@ function Index() {
                       : "Ex.: 10,5"
                   }
                 >
-                  <Input
-                    inputMode="decimal"
-                    value={String(input.posObraJurosAA).replace(".", ",")}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
-                      const n = Number(cleaned);
-                      set("posObraJurosAA", Number.isFinite(n) ? n : 0);
-                    }}
+                  <DecimalInput
+                    value={input.posObraJurosAA}
+                    onChange={(n) => set("posObraJurosAA", n)}
                     placeholder="10,5"
                   />
                 </Field>
