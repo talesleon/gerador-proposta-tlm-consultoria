@@ -395,7 +395,7 @@ function Index() {
             <Card className="elev-1 p-5">
               <SectionHead icon={<FileText className="h-4 w-4" />} title="Tabela Direta" />
               <p className="text-xs text-muted-foreground mt-2">
-                Estrutura padrão sobre o <strong>Valor de Tabela</strong>: 10% entrada · 40% obra ·
+                Estrutura padrão sobre o <strong>Valor de Venda</strong>: 10% entrada · 30% obra ·
                 60% pós-obra em {TD_POS_OBRA_PARCELAS}x direto com a construtora.
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
