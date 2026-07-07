@@ -546,7 +546,7 @@ function Index() {
                   highlight
                 />
                 <Computed
-                  label="Saldo financiado (60% VT)"
+                  label="Saldo financiado (60% VV)"
                   value={formatBRL(td.posObraTotal)}
                 />
               </div>
