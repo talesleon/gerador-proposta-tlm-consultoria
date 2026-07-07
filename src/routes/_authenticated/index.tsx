@@ -1013,7 +1013,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
                   />
                 )}
               </PreviewPhase>
-              <PreviewPhase num="3" title={`Pós-obra (60% VT · ${TD_POS_OBRA_PARCELAS}x)`}>
+              <PreviewPhase num="3" title={`Pós-obra (60% VV · ${TD_POS_OBRA_PARCELAS}x)`}>
                 <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
                   Direto com a construtora, a partir de{" "}
                   {input.posObraInicio || "(definir)"}.
