@@ -361,13 +361,16 @@ function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
   sections.push(header);
 
   const valores: string[] = [];
-  valores.push(`💰 *VALOR DE TABELA*`);
+  valores.push(`💰 *VALORES*`);
   valores.push("");
-  valores.push(`*${formatBRL(input.vt)}*`);
+  valores.push(`Tabela: ${formatBRL(input.vt)}`);
+  valores.push(`Negociado: *${formatBRL(input.vv)}*`);
+  const desconto = input.vt - input.vv;
+  if (desconto > 0) valores.push(`Você economiza: ${formatBRL(desconto)}`);
   sections.push(valores);
 
   const entrada: string[] = [];
-  entrada.push(`💳 *ENTRADA (10% VT)*`);
+  entrada.push(`💳 *ENTRADA (10% VV)*`);
   entrada.push("");
   const cTD = compute(input);
   const saParcela = input.saParcelas > 0 ? cTD.sa / input.saParcelas : cTD.sa;
@@ -384,7 +387,7 @@ function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
   sections.push(entrada);
 
   const obra: string[] = [];
-  obra.push(`🏗️ *OBRA (40% VT)*`);
+  obra.push(`🏗️ *OBRA (30% VV)*`);
   obra.push("");
   if (td.mesesObra > 0) {
     obra.push(`Parcela mensal: *${formatBRL(td.obraMensalParcela)}* (${td.mesesObra}x)`);
@@ -401,7 +404,7 @@ function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
   sections.push(obra);
 
   const pos: string[] = [];
-  pos.push(`🔑 *PÓS-OBRA (60% VT em ${TD_POS_OBRA_PARCELAS}x)*`);
+  pos.push(`🔑 *PÓS-OBRA (60% VV em ${TD_POS_OBRA_PARCELAS}x)*`);
   pos.push("");
   pos.push(`A partir de *${input.posObraInicio || "(definir)"}*.`);
   pos.push(`Parcela estimada: *${formatBRL(td.posObraParcela)}*`);
