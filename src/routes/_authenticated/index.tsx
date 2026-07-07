@@ -891,6 +891,60 @@ function MoneyInput({ value, onChange }: { value: number; onChange: (n: number) 
   );
 }
 
+/**
+ * Input para números decimais (ex.: juros % a.a.).
+ * Preserva o texto digitado (inclusive vírgula/ponto pendente) para
+ * permitir digitar "10,5" sem que a vírgula seja apagada.
+ */
+function DecimalInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  placeholder?: string;
+}) {
+  const [text, setText] = useState<string>(() =>
+    value ? String(value).replace(".", ",") : "",
+  );
+  const [focused, setFocused] = useState(false);
+
+  // Sincroniza display quando o valor externo muda e o campo não está focado.
+  if (!focused) {
+    const parsed = Number(text.replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed !== value) {
+      const next = value ? String(value).replace(".", ",") : "";
+      if (next !== text) queueMicrotask(() => setText(next));
+    }
+  }
+
+  return (
+    <Input
+      inputMode="decimal"
+      value={text}
+      placeholder={placeholder}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        const cleaned = text.replace(/[^\d,.]/g, "").replace(",", ".");
+        const n = Number(cleaned);
+        const final = Number.isFinite(n) ? n : 0;
+        onChange(final);
+        setText(final ? String(final).replace(".", ",") : "");
+      }}
+      onChange={(e) => {
+        // Aceita dígitos, vírgula e ponto. Preserva o texto para permitir "10,".
+        const raw = e.target.value.replace(/[^\d,.]/g, "");
+        setText(raw);
+        const cleaned = raw.replace(",", ".");
+        const n = Number(cleaned);
+        if (Number.isFinite(n)) onChange(n);
+      }}
+    />
+  );
+}
+
 function Computed({
   label,
   value,
