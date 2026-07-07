@@ -146,10 +146,10 @@ export function compute(input: ProposalInput): ProposalComputed {
   let ve: number;
   let saDefault: number;
   if (isTD) {
-    // Tabela Direta: V.F = V.T − V.E, com V.E = 10% V.T e S.A padrão = 2% V.T.
-    vf = input.vt * (1 - TD_PCT.entrada);
-    ve = input.vt * TD_PCT.entrada;
-    saDefault = input.vt * 0.02;
+    // Tabela Direta: base V.V. V.E = 10% V.V, V.F = 90% V.V, S.A padrão = 2% V.V.
+    vf = input.vv * (1 - TD_PCT.entrada);
+    ve = input.vv * TD_PCT.entrada;
+    saDefault = input.vv * 0.02;
   } else {
     const pct = FINANCIAMENTO_PCT[input.sistemaFinanciamento] ?? 0.8;
     vf = input.va * pct;
