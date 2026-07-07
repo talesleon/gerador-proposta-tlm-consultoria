@@ -628,7 +628,7 @@ function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   }
 
   // ── Fase 3: Pós-obra
-  phaseTitle("3", `Pós-obra · 60% VT em ${TD_POS_OBRA_PARCELAS}x`);
+  phaseTitle("3", `Pós-obra · 60% VV em ${TD_POS_OBRA_PARCELAS}x`);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   setColor(TEXT_SOFT);
