@@ -584,7 +584,7 @@ function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   }
 
   // ── Fase 2: Obra
-  phaseTitle("2", "Obra · 40% VT");
+  phaseTitle("2", "Obra · 30% VV");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   setColor(TEXT_SOFT);
