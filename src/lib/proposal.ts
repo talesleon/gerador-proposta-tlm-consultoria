@@ -15,12 +15,12 @@ export const FINANCIAMENTO_PCT: Record<SistemaFinanciamento, number> = {
   TABELA_DIRETA: 0,
 };
 
-/** Percentuais fixos da Tabela Direta sobre o Valor de Tabela (VT). */
+/** Percentuais fixos da Tabela Direta sobre o Valor de Venda (VV). */
 export const TD_PCT = {
   entrada: 0.1,
-  obra: 0.4,
+  obra: 0.3,
   posObra: 0.6,
-  intermediaria: 0.05,
+  intermediaria: 0.05, // 5% do V.T
 } as const;
 
 export const TD_POS_OBRA_PARCELAS = 120;
