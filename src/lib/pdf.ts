@@ -32,7 +32,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     return generateTabelaDiretaPDF(input);
   }
   const W = 90;
-  const H = 210;
+  const H = 250;
   const M = 8; // margem segura lateral
   const CW = W - M * 2; // largura útil
   const doc = new jsPDF({ unit: "mm", format: [W, H], orientation: "portrait" });
@@ -426,7 +426,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
  */
 function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   const W = 90;
-  const H = 210;
+  const H = 250;
   const M = 8;
   const CW = W - M * 2;
   const doc = new jsPDF({ unit: "mm", format: [W, H], orientation: "portrait" });
@@ -539,7 +539,7 @@ function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   };
 
   // ── Fase 1: Entrada (10% VT) = S.A + E.C
-  phaseTitle("1", "Entrada · 10% VT");
+  phaseTitle("1", "Entrada · 10% VV");
   const c = compute(input);
 
   // S.A
@@ -584,7 +584,7 @@ function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   }
 
   // ── Fase 2: Obra
-  phaseTitle("2", "Obra · 40% VT");
+  phaseTitle("2", "Obra · 30% VV");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   setColor(TEXT_SOFT);
@@ -628,7 +628,7 @@ function generateTabelaDiretaPDF(input: ProposalInput): jsPDF {
   }
 
   // ── Fase 3: Pós-obra
-  phaseTitle("3", `Pós-obra · 60% VT em ${TD_POS_OBRA_PARCELAS}x`);
+  phaseTitle("3", `Pós-obra · 60% VV em ${TD_POS_OBRA_PARCELAS}x`);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   setColor(TEXT_SOFT);

@@ -15,12 +15,12 @@ export const FINANCIAMENTO_PCT: Record<SistemaFinanciamento, number> = {
   TABELA_DIRETA: 0,
 };
 
-/** Percentuais fixos da Tabela Direta sobre o Valor de Tabela (VT). */
+/** Percentuais fixos da Tabela Direta sobre o Valor de Venda (VV). */
 export const TD_PCT = {
   entrada: 0.1,
-  obra: 0.4,
+  obra: 0.3,
   posObra: 0.6,
-  intermediaria: 0.05,
+  intermediaria: 0.05, // 5% do V.T
 } as const;
 
 export const TD_POS_OBRA_PARCELAS = 120;
@@ -80,20 +80,25 @@ export interface TabelaDiretaComputed {
 }
 
 /**
- * Cálculo da Tabela Direta sobre o Valor de Tabela (VT).
+ * Cálculo da Tabela Direta sobre o Valor de Venda (VV).
  * - 10% entrada (sinal único)
- * - 40% obra: mensais + intermediárias anuais de 5% VT (até a entrega)
+ * - 30% obra: mensais + intermediárias anuais de 5% VT (até a entrega)
  * - 60% pós-obra em 120x com juros configuráveis (PRICE)
+ * Total = 100% do V.V. Intermediárias são calculadas sobre V.T.
  */
 export function computeTabelaDireta(input: ProposalInput): TabelaDiretaComputed {
+  const vv = Math.max(0, input.vv || 0);
   const vt = Math.max(0, input.vt || 0);
-  const entrada = vt * TD_PCT.entrada;
-  const obraTotal = vt * TD_PCT.obra;
-  const posObraTotal = vt * TD_PCT.posObra;
+  const entrada = vv * TD_PCT.entrada;
+  const obraTotal = vv * TD_PCT.obra;
+  const posObraTotal = vv * TD_PCT.posObra;
   const intermediariaValor = vt * TD_PCT.intermediaria;
   const mesesObra = tempoObraMeses(input.entrega);
   const anosObra = Math.max(0, Math.floor(mesesObra / 12));
-  const intermediariasMax = Math.min(anosObra, Math.floor(TD_PCT.obra / TD_PCT.intermediaria));
+  const maxPorObra = intermediariaValor > 0
+    ? Math.floor(obraTotal / intermediariaValor)
+    : 0;
+  const intermediariasMax = Math.min(anosObra, maxPorObra);
   const qtdSolicitada = input.tdIntermediariasQtd > 0
     ? input.tdIntermediariasQtd
     : intermediariasMax;
@@ -141,10 +146,10 @@ export function compute(input: ProposalInput): ProposalComputed {
   let ve: number;
   let saDefault: number;
   if (isTD) {
-    // Tabela Direta: V.F = V.T − V.E, com V.E = 10% V.T e S.A padrão = 2% V.T.
-    vf = input.vt * (1 - TD_PCT.entrada);
-    ve = input.vt * TD_PCT.entrada;
-    saDefault = input.vt * 0.02;
+    // Tabela Direta: base V.V. V.E = 10% V.V, V.F = 90% V.V, S.A padrão = 2% V.V.
+    vf = input.vv * (1 - TD_PCT.entrada);
+    ve = input.vv * TD_PCT.entrada;
+    saDefault = input.vv * 0.02;
   } else {
     const pct = FINANCIAMENTO_PCT[input.sistemaFinanciamento] ?? 0.8;
     vf = input.va * pct;
@@ -356,13 +361,16 @@ function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
   sections.push(header);
 
   const valores: string[] = [];
-  valores.push(`💰 *VALOR DE TABELA*`);
+  valores.push(`💰 *VALORES*`);
   valores.push("");
-  valores.push(`*${formatBRL(input.vt)}*`);
+  valores.push(`Tabela: ${formatBRL(input.vt)}`);
+  valores.push(`Negociado: *${formatBRL(input.vv)}*`);
+  const desconto = input.vt - input.vv;
+  if (desconto > 0) valores.push(`Você economiza: ${formatBRL(desconto)}`);
   sections.push(valores);
 
   const entrada: string[] = [];
-  entrada.push(`💳 *ENTRADA (10% VT)*`);
+  entrada.push(`💳 *ENTRADA (10% VV)*`);
   entrada.push("");
   const cTD = compute(input);
   const saParcela = input.saParcelas > 0 ? cTD.sa / input.saParcelas : cTD.sa;
@@ -379,7 +387,7 @@ function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
   sections.push(entrada);
 
   const obra: string[] = [];
-  obra.push(`🏗️ *OBRA (40% VT)*`);
+  obra.push(`🏗️ *OBRA (30% VV)*`);
   obra.push("");
   if (td.mesesObra > 0) {
     obra.push(`Parcela mensal: *${formatBRL(td.obraMensalParcela)}* (${td.mesesObra}x)`);
@@ -396,7 +404,7 @@ function buildWhatsAppTextTabelaDireta(input: ProposalInput): string {
   sections.push(obra);
 
   const pos: string[] = [];
-  pos.push(`🔑 *PÓS-OBRA (60% VT em ${TD_POS_OBRA_PARCELAS}x)*`);
+  pos.push(`🔑 *PÓS-OBRA (60% VV em ${TD_POS_OBRA_PARCELAS}x)*`);
   pos.push("");
   pos.push(`A partir de *${input.posObraInicio || "(definir)"}*.`);
   pos.push(`Parcela estimada: *${formatBRL(td.posObraParcela)}*`);

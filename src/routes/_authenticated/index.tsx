@@ -336,7 +336,7 @@ function Index() {
                 label="Sistema de Financiamento"
                 helper={
                   input.sistemaFinanciamento === "TABELA_DIRETA"
-                    ? "Tabela Direta: 10% entrada · 40% obra · 60% pós-obra (120x). Tudo direto com a construtora."
+                    ? "Tabela Direta: 10% entrada · 30% obra · 60% pós-obra (120x) sobre o V.V. Tudo direto com a construtora."
                     : `V.F = ${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% do V.A`
                 }
               >
@@ -379,13 +379,13 @@ function Index() {
               <Computed
                 label={
                   isTD
-                    ? "V.F · Financiável (V.T − V.E)"
+                    ? "V.F · Financiável (V.V − V.E)"
                     : `V.F · Financiável (${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% V.A)`
                 }
                 value={formatBRL(c.vf)}
               />
               <Computed
-                label={isTD ? "V.E · Entrada (10% V.T)" : "V.E · Entrada (V.V − V.F)"}
+                label={isTD ? "V.E · Entrada (10% V.V)" : "V.E · Entrada (V.V − V.F)"}
                 value={formatBRL(c.ve)}
               />
             </div>
@@ -395,7 +395,7 @@ function Index() {
             <Card className="elev-1 p-5">
               <SectionHead icon={<FileText className="h-4 w-4" />} title="Tabela Direta" />
               <p className="text-xs text-muted-foreground mt-2">
-                Estrutura padrão sobre o <strong>Valor de Tabela</strong>: 10% entrada · 40% obra ·
+                Estrutura padrão sobre o <strong>Valor de Venda</strong>: 10% entrada · 30% obra ·
                 60% pós-obra em {TD_POS_OBRA_PARCELAS}x direto com a construtora.
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -404,7 +404,7 @@ function Index() {
                   helper={
                     saOverflow
                       ? "S.A maior que V.E"
-                      : `Padrão 2% V.T = ${formatBRL(c.saDefault)}`
+                      : `Padrão 2% V.V = ${formatBRL(c.saDefault)}`
                   }
                   warn={saOverflow}
                   trailing={
@@ -526,14 +526,9 @@ function Index() {
                       : "Ex.: 10,5"
                   }
                 >
-                  <Input
-                    inputMode="decimal"
-                    value={String(input.posObraJurosAA).replace(".", ",")}
-                    onChange={(e) => {
-                      const cleaned = e.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
-                      const n = Number(cleaned);
-                      set("posObraJurosAA", Number.isFinite(n) ? n : 0);
-                    }}
+                  <DecimalInput
+                    value={input.posObraJurosAA}
+                    onChange={(n) => set("posObraJurosAA", n)}
                     placeholder="10,5"
                   />
                 </Field>
@@ -546,7 +541,7 @@ function Index() {
                   highlight
                 />
                 <Computed
-                  label="Saldo financiado (60% VT)"
+                  label="Saldo financiado (60% VV)"
                   value={formatBRL(td.posObraTotal)}
                 />
               </div>
@@ -726,14 +721,9 @@ function Index() {
                     : "Ex.: 10,5"
                 }
               >
-                <Input
-                  inputMode="decimal"
-                  value={String(input.posObraJurosAA).replace(".", ",")}
-                  onChange={(e) => {
-                    const cleaned = e.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
-                    const n = Number(cleaned);
-                    set("posObraJurosAA", Number.isFinite(n) ? n : 0);
-                  }}
+                <DecimalInput
+                  value={input.posObraJurosAA}
+                  onChange={(n) => set("posObraJurosAA", n)}
                   placeholder="10,5"
                 />
               </Field>
@@ -891,6 +881,60 @@ function MoneyInput({ value, onChange }: { value: number; onChange: (n: number) 
   );
 }
 
+/**
+ * Input para números decimais (ex.: juros % a.a.).
+ * Preserva o texto digitado (inclusive vírgula/ponto pendente) para
+ * permitir digitar "10,5" sem que a vírgula seja apagada.
+ */
+function DecimalInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  placeholder?: string;
+}) {
+  const [text, setText] = useState<string>(() =>
+    value ? String(value).replace(".", ",") : "",
+  );
+  const [focused, setFocused] = useState(false);
+
+  // Sincroniza display quando o valor externo muda e o campo não está focado.
+  if (!focused) {
+    const parsed = Number(text.replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed !== value) {
+      const next = value ? String(value).replace(".", ",") : "";
+      if (next !== text) queueMicrotask(() => setText(next));
+    }
+  }
+
+  return (
+    <Input
+      inputMode="decimal"
+      value={text}
+      placeholder={placeholder}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        const cleaned = text.replace(/[^\d,.]/g, "").replace(",", ".");
+        const n = Number(cleaned);
+        const final = Number.isFinite(n) ? n : 0;
+        onChange(final);
+        setText(final ? String(final).replace(".", ",") : "");
+      }}
+      onChange={(e) => {
+        // Aceita dígitos, vírgula e ponto. Preserva o texto para permitir "10,".
+        const raw = e.target.value.replace(/[^\d,.]/g, "");
+        setText(raw);
+        const cleaned = raw.replace(",", ".");
+        const n = Number(cleaned);
+        if (Number.isFinite(n)) onChange(n);
+      }}
+    />
+  );
+}
+
 function Computed({
   label,
   value,
@@ -977,7 +1021,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
         <div className="bg-white/[0.03] border-t border-white/10">
           {isTD ? (
             <>
-              <PreviewPhase num="1" title="Entrada (10% VT)">
+              <PreviewPhase num="1" title="Entrada (10% VV)">
                 <PreviewEntradaRow
                   label="Sinal ato"
                   parcelas={input.saParcelas}
@@ -995,7 +1039,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
                   />
                 )}
               </PreviewPhase>
-              <PreviewPhase num="2" title="Obra (40% VT)">
+              <PreviewPhase num="2" title="Obra (30% VV)">
                 <PreviewEntradaRow
                   label="Parcela mensal"
                   parcelas={td.mesesObra}
@@ -1013,7 +1057,7 @@ function ProposalPreview({ input }: { input: ProposalInput }) {
                   />
                 )}
               </PreviewPhase>
-              <PreviewPhase num="3" title={`Pós-obra (60% VT · ${TD_POS_OBRA_PARCELAS}x)`}>
+              <PreviewPhase num="3" title={`Pós-obra (60% VV · ${TD_POS_OBRA_PARCELAS}x)`}>
                 <p className="text-[11px] opacity-80 leading-relaxed px-1 mb-1.5">
                   Direto com a construtora, a partir de{" "}
                   {input.posObraInicio || "(definir)"}.
