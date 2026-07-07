@@ -379,13 +379,13 @@ function Index() {
               <Computed
                 label={
                   isTD
-                    ? "V.F · Financiável (V.T − V.E)"
+                    ? "V.F · Financiável (V.V − V.E)"
                     : `V.F · Financiável (${Math.round(FINANCIAMENTO_PCT[input.sistemaFinanciamento] * 100)}% V.A)`
                 }
                 value={formatBRL(c.vf)}
               />
               <Computed
-                label={isTD ? "V.E · Entrada (10% V.T)" : "V.E · Entrada (V.V − V.F)"}
+                label={isTD ? "V.E · Entrada (10% V.V)" : "V.E · Entrada (V.V − V.F)"}
                 value={formatBRL(c.ve)}
               />
             </div>
