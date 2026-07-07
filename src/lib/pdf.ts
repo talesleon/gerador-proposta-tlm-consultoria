@@ -32,7 +32,7 @@ export function generateProposalPDF(input: ProposalInput, c: ProposalComputed): 
     return generateTabelaDiretaPDF(input);
   }
   const W = 90;
-  const H = 210;
+  const H = 250;
   const M = 8; // margem segura lateral
   const CW = W - M * 2; // largura útil
   const doc = new jsPDF({ unit: "mm", format: [W, H], orientation: "portrait" });
